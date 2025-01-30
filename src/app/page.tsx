@@ -12,7 +12,7 @@ export default function Home() {
           
           <p className="mb-6">
             This is a research project exploring how artificial intelligence can help children
-            find books they'll love. We'll ask you some questions about what you like to read,
+            find books they&apos;ll love. We&apos;ll ask you some questions about what you like to read,
             and our AI will help suggest books just for you!
           </p>
 
