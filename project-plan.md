@@ -24,7 +24,7 @@ This project is a 30-credit master's thesis project. It involves developing a we
 ### Stretch Goal
 Complete data scraping and set it up as an independent project.
 
-## 2. Data Collection and Processing (2 weeks: February 1-14)
+## 2. Data Collection and Design (2 weeks: February 1-14)
 
 ### Data Collection and Database Design
 - Develop and run web scraper for forlagid.is
@@ -35,15 +35,21 @@ Complete data scraping and set it up as an independent project.
   - Only user tables to collect information about users
 - Set up thesis structure in Overleaf and note points in each subsection to shape what will be discussed in each chapter.
 
-## 3. Interface Design and Prototype (2 weeks: February 15-28)
+## 3. Interface Design and Prototype 
 
 ### Design and Prototypes
 - Design user flow and question process
   - Also design front page text explaining this is a research project and data is collected anonymously
   - Also need to consider the process after finding a book where the user is asked several questions including something that helps answer the main research question.
-- Create wireframes for key pages
 - Implement high-fidelity prototype
 - Conduct rapid user testing on prototype
+
+## 14-28. February
+
+- Design prompt to create the ideal back cover for the child
+- Perform lookup with the back cover as a reference query
+- Present top 50 books to the child in the interface where they can select which ones they have read
+- Do background processing to create reasoning for recommendations on the last screen where we filter out books that they have read.
 
 ## 4. Programming (5 weeks: March 1 - April 4)
 
