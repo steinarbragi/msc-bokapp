@@ -15,8 +15,8 @@ export default function Home() {
           <p className='mb-6'>
             Þetta er rannsóknarverkefni sem kannar hvernig gervigreind getur
             hjálpað börnum að finna bækur við hæfi. Vefurinn spyr þig nokkurra
-            spurninga um hvað þér finnst gaman að lesa og gervigreindin mun
-            hjálpa til við að stinga upp á bókum sem henta þér.
+            spurninga um hvað þér finnst gaman að lesa og gervigreindin mun mæla
+            með bókum sem gætu hentað þér.
           </p>
 
           <div className='mb-8'>
