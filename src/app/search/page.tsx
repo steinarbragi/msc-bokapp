@@ -12,6 +12,8 @@ interface BookMetadata {
 
 interface SearchResult {
   metadata: BookMetadata;
+  id: string;
+  score: number;
 }
 
 export default function SearchPage() {
@@ -115,6 +117,9 @@ export default function SearchPage() {
                 </h2>
                 <p className='mb-4 line-clamp-3 text-gray-600'>
                   {book.metadata.description}
+                </p>
+                <p className='pb-5 text-xs text-gray-500'>
+                  Score: {book.score}
                 </p>
                 <a
                   href={book.metadata.url}
