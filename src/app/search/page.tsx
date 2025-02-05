@@ -107,9 +107,9 @@ export default function SearchPage() {
                   <Image
                     src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
                     alt={book.metadata.title}
-                    width={100}
-                    height={150}
-                    className='mb-4 h-48 w-full object-cover'
+                    width={200}
+                    height={320}
+                    className='mb-4 h-80 w-full object-cover'
                   />
                 )}
                 <h2 className='mb-2 text-xl font-semibold'>
