@@ -54,7 +54,7 @@ export default function Home() {
           </div>
 
           <Link
-            href='/search'
+            href='/survey'
             className='rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
           >
             Finnum Bækur
