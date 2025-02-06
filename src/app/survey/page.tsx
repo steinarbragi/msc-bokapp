@@ -103,7 +103,7 @@ export default function QuestionsPage() {
             {isComplete && (
               <Link
                 href='/search'
-                className='mt-6 w-full rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
+                className='mt-12 flex w-full justify-center rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
               >
                 Finna bækur
               </Link>
