@@ -18,15 +18,57 @@ export default function QuestionsPage() {
   const questions: Question[] = [
     {
       id: 1,
-      text: 'Hvaða aldri ertu á?',
+      text: 'Hvert er kyn þitt?',
+      type: 'multiple-choice',
+      options: ['Stelpa', 'Strákur', 'Annað'],
+    },
+    {
+      id: 2,
+      text: `Hvað ertu ${answers[1] === 'Stelpa' ? 'gömul' : answers[1] === 'Strákur' ? 'gamall' : 'gamalt'}?`,
       type: 'multiple-choice',
       options: ['6-7 ára', '8-9 ára', '10-11 ára'],
     },
     {
-      id: 2,
+      id: 3,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
       type: 'multiple-choice',
-      options: ['Ævintýri', 'Fantasía', 'Húmor', 'Dýrasögur'],
+      options: ['Ævintýri', 'Fantasía', 'Húmor', 'Dýrasögur', 'Daglegt líf'],
+    },
+    {
+      id: 4,
+      text: 'Hvernig á aðalsögupersónan að vera?',
+      type: 'multiple-choice',
+      options: [
+        'Hugmyndarík/ur og klár',
+        'Hugrökk/Hugrakkur og ævintýragjörn/ævintýragjarn',
+        'Fyndin/n og skemmtileg/ur',
+        'Góð/ur við aðra og hjálpsöm/samur',
+        'Svipuð/svipaður mér',
+      ],
+    },
+    {
+      id: 5,
+      text: 'Hvað viltu að gerist í sögunni?',
+      type: 'multiple-choice',
+      options: [
+        'Leysa dularfullt mál',
+        'Fara í spennandi ferðalag',
+        'Bjarga einhverjum/einhverju',
+        'Eignas nýja vini',
+        'Sigrast á erfiðu verkefni',
+      ],
+    },
+    {
+      id: 6,
+      text: 'Hvar á sagan að gerast?',
+      type: 'multiple-choice',
+      options: [
+        'Í töfraheimi',
+        'Í venjulegum heimi',
+        'Í skóla',
+        'Úti í náttúrunni',
+        'Í framtíðinni',
+      ],
     },
     // Add more questions...
   ];
