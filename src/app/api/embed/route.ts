@@ -23,7 +23,26 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error generating embedding:', error);
-    return new Response('Error generating embedding', { status: 500 });
+    // More detailed error logging
+    console.error('Error generating embedding:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      details:
+        error instanceof Error && 'response' in error
+          ? (error.response as { data: unknown })?.data
+          : error,
+    });
+
+    // Return more specific error message
+    return new Response(
+      JSON.stringify({
+        error: 'Error generating embedding',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
