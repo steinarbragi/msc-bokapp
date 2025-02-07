@@ -54,7 +54,7 @@ export default function QuestionsPage() {
         'Leysa dularfullt mál',
         'Fara í spennandi ferðalag',
         'Bjarga einhverjum/einhverju',
-        'Eignas nýja vini',
+        'Eignast nýja vini',
         'Sigrast á erfiðu verkefni',
       ],
     },
