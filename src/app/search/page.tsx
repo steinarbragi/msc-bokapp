@@ -20,6 +20,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (results.length > 0) {
@@ -30,6 +31,8 @@ export default function SearchPage() {
     if (!query) return;
 
     setIsLoading(true);
+    setError(null); // Clear any previous errors
+
     try {
       // First get the embedding for the search query
       const embedResponse = await fetch('/api/embed', {
@@ -40,8 +43,20 @@ export default function SearchPage() {
         body: JSON.stringify({ text: query }),
       });
 
+      // Log the response details
+      console.log('Response status:', embedResponse.status);
+      console.log(
+        'Response headers:',
+        Object.fromEntries(embedResponse.headers.entries())
+      );
+
+      // If not OK, log the raw response text for debugging
       if (!embedResponse.ok) {
-        throw new Error('Failed to generate embedding');
+        const rawText = await embedResponse.text();
+        console.error('Raw error response:', rawText);
+        throw new Error(
+          `API request failed: ${embedResponse.status} ${embedResponse.statusText}`
+        );
       }
 
       const embedding = await embedResponse.json();
@@ -64,8 +79,13 @@ export default function SearchPage() {
 
       const searchResults = await searchResponse.json();
       setResults(searchResults.matches);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error searching:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -93,6 +113,12 @@ export default function SearchPage() {
             {isLoading ? 'Leita...' : 'Leita'}
           </button>
         </div>
+
+        {error && (
+          <div className='mb-4 rounded-lg bg-red-100 p-4 text-red-700'>
+            Villa kom upp: {error}
+          </div>
+        )}
 
         {isLoading ? (
           <div className='text-center'>Leita að bókum...</div>
