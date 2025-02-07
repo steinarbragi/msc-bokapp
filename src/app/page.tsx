@@ -2,67 +2,75 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className='grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20'>
+    <div className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20'>
       <header className='text-center'>
         <h1
-          className='mb-2 text-4xl font-bold'
+          className='mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-5xl font-bold text-transparent'
           aria-label='Bokagreind - Find your next favorite book'
         >
           Bókagreind
         </h1>
-        <p className='text-lg text-gray-600'>
-          Finndu næstu uppáhaldsbókina þína!
+        <p className='text-xl font-medium text-gray-700'>
+          Finndu næstu uppáhaldsbókina þína! ✨📚
         </p>
       </header>
 
-      <main className='max-w-2xl text-center'>
-        <div className='rounded-lg bg-white p-8 shadow-lg'>
-          <h2 className='mb-6 text-2xl font-semibold'>Rannsóknarverkefni</h2>
+      <main className='mx-auto mt-12 max-w-2xl'>
+        <div className='transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl transition-transform hover:scale-[1.02]'>
+          <h2 className='mb-6 text-3xl font-bold text-purple-600'>
+            Spennandi ævintýri! 🎮
+          </h2>
 
-          <p className='mb-6'>
-            Þetta er rannsóknarverkefni sem kannar hvernig gervigreind getur
-            hjálpað börnum að finna bækur við hæfi. Vefurinn spyr þig nokkurra
-            spurninga um hvað þér finnst gaman að lesa og gervigreindin mun mæla
-            með bókum sem gætu hentað þér.
+          <p className='mb-6 text-lg'>
+            Þetta er töfrandi ferðalag þar sem við notum galdra gervigreindar
+            til að hjálpa þér að finna bestu bækurnar! Við spyrjum þig nokkurra
+            spurninga og töfravélin okkar finnur bækur fyrir þig! 🌟
           </p>
 
           <div className='mb-8'>
-            <h3 className='mb-4 text-xl font-medium'>Svona virkar þetta:</h3>
-            <ul
-              className='list-inside list-disc space-y-2 text-left'
-              role='list'
-            >
-              <li className='pl-1'>
-                <span className='pl-2'>
-                  Þú getur svarað nokkrum spurningum um lestraráhuga
+            <h3 className='mb-4 text-2xl font-bold text-blue-600'>
+              Svona virkar þetta:
+            </h3>
+            <ul className='list-none space-y-4 text-left' role='list'>
+              <li className='flex items-center'>
+                <span className='mr-2 text-2xl'>🎯</span>
+                <span className='text-lg'>
+                  Segðu okkur hvað þér finnst skemmtilegt að lesa
                 </span>
               </li>
-              <li className='pl-1'>
-                <span className='pl-2'>
-                  Þú getur látið vefinn vita hvað þú hefur lesið áður
+              <li className='flex items-center'>
+                <span className='mr-2 text-2xl'>📚</span>
+                <span className='text-lg'>
+                  Deildu með okkur uppáhaldsbókunum þínum
                 </span>
               </li>
-              <li className='pl-1'>
-                <span className='pl-2'>Þú færð þá persónuleg bókameðmæli</span>
+              <li className='flex items-center'>
+                <span className='mr-2 text-2xl'>✨</span>
+                <span className='text-lg'>
+                  Töfravélin finnur bækur fyrir þig
+                </span>
               </li>
-              <li className='pl-1'>
-                <span className='pl-2'>
-                  Að lokum bjóðum við þér að svara könnun um upplifun þína
+              <li className='flex items-center'>
+                <span className='mr-2 text-2xl'>🌟</span>
+                <span className='text-lg'>
+                  Segðu okkur hvernig þér fannst þetta virka
                 </span>
               </li>
             </ul>
           </div>
 
-          <Link
-            href='/survey'
-            className='rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
-          >
-            Finnum Bækur
-          </Link>
+          <div className='flex justify-center'>
+            <Link
+              href='/survey'
+              className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
+            >
+              Hefjum ævintýrið! 🚀
+            </Link>
+          </div>
 
-          <p className='mt-6 text-sm text-gray-500'>
-            Fyrir börn á aldrinum 6-11 ára. Öllum gögnum er safnað nafnlaust
-            fyrir rannsóknarverkefnið.
+          <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
+            Fyrir unga ævintýraþyrsta lesendur 6-11 ára. Öll gögn eru nafnlaus
+            og geymd eins og fjársjóður í öruggum kastala 🏰
           </p>
         </div>
       </main>
