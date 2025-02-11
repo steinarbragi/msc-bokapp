@@ -115,12 +115,22 @@ export default function SearchPage() {
           </button>
         </div>
 
-        <Link
-          href='/survey/end'
-          className='mb-8 block text-center text-blue-600 hover:underline'
-        >
-          Svara stuttri könnun um vefsíðuna
-        </Link>
+        <div className='mb-8 rounded-lg bg-blue-50 p-4 text-sm text-blue-700'>
+          <p>
+            Við munum nota svörin úr könnuninni til að búa til leitarstreng. Það
+            á eftir að útfæra það. Það er líka hægt að leita sjálf/ur með því að
+            skrifa leitarorð.
+          </p>
+        </div>
+
+        <div className='flex justify-center'>
+          <Link
+            href='/survey/end'
+            className='mb-8 inline-block rounded-lg border-2 border-blue-600 px-6 py-3 text-center text-blue-600 transition-colors hover:bg-blue-600 hover:text-white'
+          >
+            Svara stuttri könnun um vefsíðuna
+          </Link>
+        </div>
 
         {error && (
           <div className='mb-4 rounded-lg bg-red-100 p-4 text-red-700'>

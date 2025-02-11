@@ -25,7 +25,9 @@ export default function Survey({
 }: SurveyProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [textAnswers, setTextAnswers] = useState<Record<number, string>>({});
   const router = useRouter();
+
   const handleAnswer = (answer: string) => {
     const newAnswers = {
       ...answers,
@@ -33,13 +35,33 @@ export default function Survey({
     };
     setAnswers(newAnswers);
 
-    // For text fields, only advance when Enter is pressed
-    // This is handled in the text input component
+    // For text fields, only advance when the button is clicked
+    // This is handled separately in handleTextSubmit
     if (questions[currentStep].type !== 'text') {
       if (currentStep < questions.length - 1) {
         setCurrentStep(prev => prev + 1);
       } else if (onComplete) {
         onComplete(newAnswers);
+      }
+    }
+  };
+
+  const handleTextSubmit = () => {
+    const currentAnswer = textAnswers[questions[currentStep].id];
+    if (currentAnswer?.trim()) {
+      const newAnswers = {
+        ...answers,
+        [questions[currentStep].id]: currentAnswer,
+      };
+      setAnswers(newAnswers);
+
+      if (currentStep < questions.length - 1) {
+        setCurrentStep(prev => prev + 1);
+      } else {
+        if (onComplete) {
+          onComplete(newAnswers);
+        }
+        router.push(nextPageUrl);
       }
     }
   };
@@ -75,6 +97,24 @@ export default function Survey({
           </div>
         </div>
 
+        <div className='mb-6 flex flex-wrap gap-2'>
+          {questions.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentStep(index)}
+              className={`h-8 w-8 rounded-full ${
+                index === currentStep
+                  ? 'bg-blue-600 text-white'
+                  : index < currentStep
+                    ? 'bg-blue-200 text-blue-800'
+                    : 'bg-gray-200 text-gray-600'
+              } flex items-center justify-center font-medium transition-colors hover:bg-blue-500 hover:text-white`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+
         <AnimatePresence mode='wait'>
           <motion.div
             key={currentStep}
@@ -101,7 +141,11 @@ export default function Survey({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                     onClick={() => handleAnswer(option)}
-                    className='w-full rounded-lg border-2 border-gray-200 p-4 text-left hover:border-blue-600'
+                    className={`w-full rounded-lg border-2 ${
+                      answers[questions[currentStep].id] === option
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200'
+                    } p-4 text-left hover:border-blue-600`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -115,13 +159,32 @@ export default function Survey({
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                className='flex gap-4'
               >
                 <input
                   type='text'
-                  onChange={e => handleAnswer(e.target.value)}
-                  className='w-full rounded-lg border-2 border-gray-200 p-4 focus:border-blue-600 focus:outline-none'
+                  value={textAnswers[questions[currentStep].id] || ''}
+                  onChange={e =>
+                    setTextAnswers(prev => ({
+                      ...prev,
+                      [questions[currentStep].id]: e.target.value,
+                    }))
+                  }
+                  onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
+                  className='flex-1 rounded-lg border-2 border-gray-200 p-4 focus:border-blue-600 focus:outline-none'
                   placeholder='Skrifaðu svar hér...'
                 />
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  onClick={handleTextSubmit}
+                  className='rounded-lg bg-blue-600 px-8 py-4 text-white hover:bg-blue-700'
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Svara
+                </motion.button>
               </motion.div>
             )}
 
