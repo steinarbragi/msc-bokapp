@@ -1,20 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import Survey from './survey';
+
+type QuestionType = 'text' | 'multiple-choice' | 'slider';
 
 interface Question {
   id: number;
   text: string;
-  type: 'multiple-choice' | 'slider' | 'text';
-  options?: string[];
+  type: QuestionType;
+  options: string[];
 }
 
 export default function QuestionsPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-
   const questions: Question[] = [
     {
       id: 1,
@@ -24,18 +21,30 @@ export default function QuestionsPage() {
     },
     {
       id: 2,
-      text: `Hvað ertu ${answers[1] === 'Stelpa' ? 'gömul' : answers[1] === 'Strákur' ? 'gamall' : 'gamalt'}?`,
+      text: 'Hvað ertu gömul/gamall/gamalt?',
       type: 'multiple-choice',
       options: ['6-7 ára', '8-9 ára', '10-11 ára'],
     },
     {
       id: 3,
+      text: 'Hvað lestu margar bækur?',
+      type: 'multiple-choice',
+      options: [
+        '1-6 bækur á ári',
+        '7-12 bækur á ári',
+        '1-2 bækur á mánuði',
+        '3-5 bækur á mánuði',
+        'Meira en 5 bækur á mánuði',
+      ],
+    },
+    {
+      id: 4,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
       type: 'multiple-choice',
       options: ['Ævintýri', 'Fantasía', 'Húmor', 'Dýrasögur', 'Daglegt líf'],
     },
     {
-      id: 4,
+      id: 5,
       text: 'Hvernig á aðalsögupersónan að vera?',
       type: 'multiple-choice',
       options: [
@@ -47,7 +56,7 @@ export default function QuestionsPage() {
       ],
     },
     {
-      id: 5,
+      id: 6,
       text: 'Hvað viltu að gerist í sögunni?',
       type: 'multiple-choice',
       options: [
@@ -59,7 +68,7 @@ export default function QuestionsPage() {
       ],
     },
     {
-      id: 6,
+      id: 7,
       text: 'Hvar á sagan að gerast?',
       type: 'multiple-choice',
       options: [
@@ -70,89 +79,7 @@ export default function QuestionsPage() {
         'Í framtíðinni',
       ],
     },
-    // Add more questions...
   ];
 
-  const handleAnswer = (answer: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questions[currentStep].id]: answer,
-    }));
-
-    if (currentStep < questions.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const isComplete = Object.keys(answers).length === questions.length;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className='min-h-screen p-8'
-    >
-      <div className='mx-auto max-w-2xl'>
-        <div className='mb-8'>
-          <div className='h-2 rounded-full bg-gray-200'>
-            <motion.div
-              className='h-2 rounded-full bg-blue-600'
-              initial={{ width: 0 }}
-              animate={{
-                width: `${((currentStep + 1) / questions.length) * 100}%`,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
-        </div>
-
-        <AnimatePresence mode='wait'>
-          <motion.div
-            key={currentStep}
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -50, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className='rounded-lg bg-white p-8 shadow-lg'
-          >
-            <motion.h1
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className='mb-6 text-2xl font-bold'
-            >
-              {questions[currentStep].text}
-            </motion.h1>
-
-            {questions[currentStep].type === 'multiple-choice' && (
-              <div className='space-y-4'>
-                {questions[currentStep].options?.map((option, index) => (
-                  <motion.button
-                    key={option}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    onClick={() => handleAnswer(option)}
-                    className='w-full rounded-lg border-2 border-gray-200 p-4 text-left hover:border-blue-600'
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {option}
-                  </motion.button>
-                ))}
-              </div>
-            )}
-
-            {isComplete && (
-              <Link
-                href='/search'
-                className='mt-12 flex w-full justify-center rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
-              >
-                Finna bækur
-              </Link>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
+  return <Survey questions={questions} nextPageUrl='/search' />;
 }

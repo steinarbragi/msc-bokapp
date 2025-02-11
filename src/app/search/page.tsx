@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface BookMetadata {
   title: string;
@@ -113,6 +114,13 @@ export default function SearchPage() {
             {isLoading ? 'Leita...' : 'Leita'}
           </button>
         </div>
+
+        <Link
+          href='/survey/end'
+          className='mb-8 block text-center text-blue-600 hover:underline'
+        >
+          Svara stuttri könnun um vefsíðuna
+        </Link>
 
         {error && (
           <div className='mb-4 rounded-lg bg-red-100 p-4 text-red-700'>
