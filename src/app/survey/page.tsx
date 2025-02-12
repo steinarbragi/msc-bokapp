@@ -21,9 +21,9 @@ export default function QuestionsPage() {
     },
     {
       id: 2,
-      text: 'Hvað ertu gömul/gamall/gamalt?',
+      text: 'Hvaða aldurshópi tilheyrir þú?',
       type: 'multiple-choice',
-      options: ['6-7 ára', '8-9 ára', '10-11 ára'],
+      options: ['6-7 ára', '8-9 ára', '10-11 ára', 'Annað'],
     },
     {
       id: 3,
