@@ -69,8 +69,8 @@ export default function Home() {
           </div>
 
           <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
-            Fyrir börn á aldrinum 6-11 ára. Öll gögn eru nafnlaus og meðhöndluð
-            af öryggi.
+            Fyrir börn á aldrinum 6-11 ára. Gögnum er safnað í rannsóknarskyni.
+            Öll gögn eru nafnlaus og meðhöndluð af öryggi.
           </p>
         </div>
       </main>
