@@ -132,7 +132,7 @@ export default function Survey({
           </motion.h1>
 
           {questions[currentStep].type === 'multiple-choice' && (
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               {questions[currentStep].options?.map(option => (
                 <motion.button
                   key={option}
@@ -155,7 +155,7 @@ export default function Survey({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className='flex gap-4'
+              className='flex flex-col gap-4 sm:flex-row'
             >
               <input
                 type='text'
