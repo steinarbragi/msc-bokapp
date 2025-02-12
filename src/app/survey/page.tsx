@@ -15,9 +15,9 @@ export default function QuestionsPage() {
   const questions: Question[] = [
     {
       id: 1,
-      text: 'Hvert er kyn þitt?',
+      text: 'Hvað lýsir þér best?',
       type: 'multiple-choice',
-      options: ['Stelpa', 'Strákur', 'Annað'],
+      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🥷'],
     },
     {
       id: 2,
