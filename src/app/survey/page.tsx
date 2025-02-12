@@ -21,9 +21,9 @@ export default function QuestionsPage() {
     },
     {
       id: 2,
-      text: 'Hvaða aldurshópi tilheyrir þú?',
+      text: 'Hvaða aldurshópi tilheyrir þú? 🎂',
       type: 'multiple-choice',
-      options: ['6-7 ára', '8-9 ára', '10-11 ára', 'Annað'],
+      options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
     },
     {
       id: 3,
@@ -41,7 +41,13 @@ export default function QuestionsPage() {
       id: 4,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
       type: 'multiple-choice',
-      options: ['Ævintýri', 'Fantasía', 'Húmor', 'Dýrasögur', 'Daglegt líf'],
+      options: [
+        'Ævintýri 🤠',
+        'Fantasía 🏰',
+        'Húmor 😄',
+        'Dýrasögur 🐾',
+        'Daglegt líf 🏠',
+      ],
     },
     {
       id: 5,
@@ -60,11 +66,11 @@ export default function QuestionsPage() {
       text: 'Hvað viltu að gerist í sögunni?',
       type: 'multiple-choice',
       options: [
-        'Leysa dularfullt mál',
-        'Fara í spennandi ferðalag',
-        'Bjarga einhverjum/einhverju',
-        'Eignast nýja vini',
-        'Sigrast á erfiðu verkefni',
+        'Leysa dularfullt mál 🔍',
+        'Fara í spennandi ferðalag 🌎',
+        'Bjarga einhverjum/einhverju 🦸',
+        'Eignast nýja vini 🤝',
+        'Sigrast á erfiðu verkefni ⭐',
       ],
     },
     {
@@ -72,11 +78,11 @@ export default function QuestionsPage() {
       text: 'Hvar á sagan að gerast?',
       type: 'multiple-choice',
       options: [
-        'Í töfraheimi',
-        'Í venjulegum heimi',
-        'Í skóla',
-        'Úti í náttúrunni',
-        'Í framtíðinni',
+        'Í töfraheimi 🌟',
+        'Í venjulegum heimi 🏘️',
+        'Í skóla 📚',
+        'Úti í náttúrunni 🌲',
+        'Í framtíðinni 🚀',
       ],
     },
   ];
