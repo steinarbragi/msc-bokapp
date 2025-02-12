@@ -115,28 +115,63 @@ export default function Survey({
             control={control}
             defaultValue={[]}
             render={({ field }) => (
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                {currentQuestion.options?.map(option => (
-                  <motion.button
-                    key={option}
-                    onClick={() => {
-                      const currentValues = (field.value as string[]) || [];
-                      const newValues = currentValues.includes(option)
-                        ? currentValues.filter(v => v !== option)
-                        : [...currentValues, option];
-                      field.onChange(newValues);
-                    }}
-                    className={`w-full rounded-xl border-2 ${
-                      ((field.value as string[]) || []).includes(option)
-                        ? 'border-purple-300 bg-purple-50'
-                        : 'border-gray-200'
-                    } p-4 text-left`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {option}
-                  </motion.button>
-                ))}
+              <div className='flex flex-col gap-4'>
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+                  {currentQuestion.options?.map(option => (
+                    <motion.button
+                      key={option}
+                      onClick={() => {
+                        const currentValues = (field.value as string[]) || [];
+                        const newValues = currentValues.includes(option)
+                          ? currentValues.filter(v => v !== option)
+                          : [...currentValues, option];
+                        field.onChange(newValues.length > 0 ? newValues : []);
+                      }}
+                      className={`w-full rounded-xl border-2 ${
+                        ((field.value as string[]) || []).includes(option)
+                          ? 'border-purple-300 bg-purple-50'
+                          : 'border-gray-200'
+                      } p-4 text-left`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {option}
+                    </motion.button>
+                  ))}
+                  {currentQuestion.allowTextInput && (
+                    <div className='flex gap-2'>
+                      <input
+                        type='text'
+                        placeholder='Annað...'
+                        className={`flex-1 rounded-xl border-2 p-4 ${
+                          ((field.value as string[]) || []).find(
+                            v => !currentQuestion.options?.includes(v)
+                          )
+                            ? 'border-purple-300 bg-purple-50'
+                            : 'border-gray-200'
+                        }`}
+                        value={
+                          ((field.value as string[]) || []).find(
+                            v => !currentQuestion.options?.includes(v)
+                          ) || ''
+                        }
+                        onChange={e => {
+                          const currentValues = (field.value as string[]) || [];
+                          const customValue = currentValues.find(
+                            v => !currentQuestion.options?.includes(v)
+                          );
+                          const newValues = customValue
+                            ? currentValues.filter(v => v !== customValue)
+                            : currentValues;
+                          if (e.target.value) {
+                            newValues.push(e.target.value);
+                          }
+                          field.onChange(newValues);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           />
@@ -153,8 +188,11 @@ export default function Survey({
                   <motion.button
                     key={option}
                     onClick={() => {
-                      field.onChange(option);
-                      handleNextStep();
+                      const newValue = field.value === option ? '' : option;
+                      field.onChange(newValue);
+                      if (newValue) {
+                        handleNextStep();
+                      }
                     }}
                     className={`w-full rounded-xl border-2 ${
                       field.value === option
@@ -195,12 +233,24 @@ export default function Survey({
   };
 
   const shouldShowSkipButton = () => {
+    const currentAnswer = answers[`question${currentQuestion.id}`];
     return (
       !isLastQuestion &&
       !isComplete &&
-      (!answers[`question${currentQuestion.id}`] ||
-        (Array.isArray(answers[`question${currentQuestion.id}`]) &&
-          (answers[`question${currentQuestion.id}`] as string[]).length === 0))
+      (!currentAnswer ||
+        (Array.isArray(currentAnswer) && currentAnswer.length === 0) ||
+        currentAnswer === '')
+    );
+  };
+
+  const shouldShowNextButton = () => {
+    const currentAnswer = answers[`question${currentQuestion.id}`];
+    return (
+      !isLastQuestion &&
+      !isComplete &&
+      currentAnswer &&
+      (!Array.isArray(currentAnswer) || currentAnswer.length > 0) &&
+      currentAnswer !== ''
     );
   };
 
@@ -241,18 +291,16 @@ export default function Survey({
             </button>
           )}
 
-          {!isLastQuestion &&
-            !isComplete &&
-            answers[`question${currentQuestion.id}`] && (
-              <motion.button
-                onClick={handleNextStep}
-                className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Áfram
-              </motion.button>
-            )}
+          {shouldShowNextButton() && (
+            <motion.button
+              onClick={handleNextStep}
+              className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Áfram
+            </motion.button>
+          )}
 
           {(isComplete || isLastQuestion) && (
             <Link
