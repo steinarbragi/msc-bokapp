@@ -18,7 +18,9 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(
+    '"Leyndardómur Norðurljósanna" er spennandi ævintýri um 11 ára gamla stelpu sem heitir Sóley. Hún býr í litlu sjávarþorpi á Íslandi með fjölskyldu sinni og gæludýrinu sínu, mörgæs sem heitir Frosti (sem kom óvænt til þorpsins einn daginn og vildi hvergi annars staðar vera en hjá Sóleyju). Eitt kvöld þegar norðurljósin dansa á himninum uppgötvar Sóley að Frosti getur talað! Hann segir henni frá göldrum norðurljósanna og að eitthvað sé að gerast sem gæti haft áhrif á öll dýr heimsins. Saman leggja þau út í ótrúlegt ferðalag þar sem þau hitta töfrandi verur úr íslenskri þjóðtrú, sigla yfir töfrahaf á ísjaka, og læra um mikilvægi þess að vernda náttúruna og allar lifandi verur. Bókin er ríkulega myndskreytt með litríkum teikningum af íslensku landslagi, töfraverum og auðvitað yndislegu vinunum Sóleyju og Frosta.'
+  );
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,27 +101,28 @@ export default function SearchPage() {
       </h1>
 
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
+        <h2>Athugið!</h2>
         <div className='mb-8 rounded-lg bg-purple-50 p-4 text-sm text-purple-700'>
           <p>
-            Við munum nota svörin úr könnuninni til að útbúa bókalýsingu. Hún
-            verður borin saman við lýsingar í bókagrunninum okkar til að finna
-            viðeigandi bækur. Það er enn í vinnslu.
+            Þessi hluti er enn í vinnslu. Við munum nota svörin úr könnuninni
+            til að útbúa bókalýsingu. Hún verður borin saman við lýsingar í
+            bókagrunninum okkar til að finna viðeigandi bækur. Þangað til
+            geturðu prófað að skrifa lýsingu á þinni draumabók. Hér er dæmi.
           </p>
         </div>
 
-        <div className='mb-8 flex flex-col gap-4 sm:flex-row'>
-          <input
-            type='text'
+        <div className='mb-8 flex flex-col content-center items-center gap-4 sm:flex-row'>
+          <textarea
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder='Sláðu inn bókalýsingu...'
-            className='flex-1 rounded-xl border-2 border-gray-200 p-4 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
+            className='h-48 flex-1 rounded-xl border-2 border-gray-200 p-4 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
           />
           <button
             onClick={handleSearch}
             disabled={isLoading}
-            className='rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg disabled:from-gray-400 disabled:to-gray-500'
+            className='h-14 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg disabled:from-gray-400 disabled:to-gray-500'
           >
             {isLoading ? 'Leita...' : 'Leita'}
           </button>
