@@ -132,7 +132,7 @@ export default function Survey({
           </motion.h1>
 
           {questions[currentStep].type === 'multiple-choice' && (
-            <div className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
               {questions[currentStep].options?.map(option => (
                 <motion.button
                   key={option}
