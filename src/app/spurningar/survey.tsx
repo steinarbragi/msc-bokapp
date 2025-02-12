@@ -33,11 +33,18 @@ export default function Survey({
   const currentQuestion = questions[currentStep];
   const isLastQuestion = currentStep === questions.length - 1;
   const answers = watch();
-  const isComplete =
-    Object.keys(answers).every(key => {
-      const answer = answers[key as keyof FormValues];
-      return answer && (!Array.isArray(answer) || answer.length > 0);
-    }) && Object.keys(answers).length === questions.length;
+  const hasValidAnswers = Object.keys(answers).every(key => {
+    const answer = answers[key as keyof FormValues];
+    // Check if answer exists and is either a non-empty string or non-empty array
+    const isValidAnswer =
+      answer && (!Array.isArray(answer) || answer.length > 0);
+    return isValidAnswer;
+  });
+
+  const hasAnsweredAllQuestions =
+    Object.keys(answers).length === questions.length;
+
+  const isComplete = hasValidAnswers && hasAnsweredAllQuestions;
 
   const onSubmit = (data: FormValues) => {
     if (onComplete) {
