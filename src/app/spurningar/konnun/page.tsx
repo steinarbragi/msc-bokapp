@@ -5,22 +5,22 @@ import Survey from '../survey';
 interface Question {
   id: number;
   text: string;
-  type: 'multiple-choice' | 'slider' | 'text';
+  type: 'multiple-choice' | 'slider' | 'text' | 'single-choice';
   options?: string[];
 }
 
-export default function QuestionsPage() {
+export default function SurveyPage() {
   const questions: Question[] = [
     {
       id: 1,
       text: 'Hversu auðvelt var að nota vefsíðuna?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: ['Mjög auðvelt 😄', 'Auðvelt 🙂', 'Erfitt 🙁', 'Mjög erfitt 😞'],
     },
     {
       id: 2,
       text: 'Skildir þú allar spurningarnar sem vefsíðan spurði þig að?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: [
         'Já, allar',
         'Flestar þeirra',
@@ -31,7 +31,7 @@ export default function QuestionsPage() {
     {
       id: 3,
       text: 'Fannst þér þetta gaman?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: [
         'Mjög gaman 😄',
         'Gaman 🙂',
@@ -42,7 +42,7 @@ export default function QuestionsPage() {
     {
       id: 4,
       text: 'Líkaði þér við bækurnar sem við mæltum með?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: [
         'Ég elskaði þær! 😄',
         'Þær voru ágætar 🙂',
@@ -53,19 +53,19 @@ export default function QuestionsPage() {
     {
       id: 5,
       text: 'Myndir þú vilja lesa einhverjar af þessum bókum?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: ['Já, allar', 'Já, sumar', 'Kannski eina', 'Nei, engar'],
     },
     {
       id: 6,
       text: 'Myndir þú nota þessa vefsíðu aftur til að finna bækur?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: ['Já, örugglega', 'Kannski', 'Nei'],
     },
     {
       id: 7,
       text: 'Hvað lestu margar bækur?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: [
         '1-6 bækur á ári',
         '7-12 bækur á ári',

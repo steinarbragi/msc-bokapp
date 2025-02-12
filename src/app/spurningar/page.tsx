@@ -2,13 +2,14 @@
 
 import Survey from './survey';
 
-type QuestionType = 'text' | 'multiple-choice' | 'slider';
+type QuestionType = 'text' | 'multiple-choice' | 'slider' | 'single-choice';
 
 interface Question {
   id: number;
   text: string;
   type: QuestionType;
   options: string[];
+  allowTextInput?: boolean;
 }
 
 export default function QuestionsPage() {
@@ -16,13 +17,13 @@ export default function QuestionsPage() {
     {
       id: 1,
       text: 'Hvað lýsir þér best?',
-      type: 'multiple-choice',
+      type: 'single-choice',
       options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
     },
     {
       id: 2,
-      text: 'Hvaða aldurshópi tilheyrir þú? 🎂',
-      type: 'multiple-choice',
+      text: 'Hvaða aldurshópi tilheyrir þú?',
+      type: 'single-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
     },
 
@@ -37,6 +38,7 @@ export default function QuestionsPage() {
         'Dýrasögur 🐾',
         'Daglegt líf 🏠',
       ],
+      allowTextInput: true,
     },
     {
       id: 4,
@@ -49,6 +51,7 @@ export default function QuestionsPage() {
         'Góð/ur við aðra og hjálpsöm/samur',
         'Svipuð/svipaður mér',
       ],
+      allowTextInput: true,
     },
     {
       id: 5,
@@ -61,6 +64,7 @@ export default function QuestionsPage() {
         'Eignast nýja vini 🤝',
         'Sigrast á erfiðu verkefni ⭐',
       ],
+      allowTextInput: true,
     },
     {
       id: 6,
@@ -73,6 +77,7 @@ export default function QuestionsPage() {
         'Úti í náttúrunni 🌲',
         'Í framtíðinni 🚀',
       ],
+      allowTextInput: true,
     },
   ];
 
