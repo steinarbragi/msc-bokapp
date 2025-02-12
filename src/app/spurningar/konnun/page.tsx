@@ -86,5 +86,11 @@ export default function SurveyPage() {
     },
   ];
 
-  return <Survey questions={questions} nextPageUrl='/takk' />;
+  return (
+    <Survey
+      questions={questions}
+      nextPageUrl='/takk'
+      nextPageButtonText='Ljúka könnun 🙏'
+    />
+  );
 }

@@ -17,12 +17,14 @@ interface SurveyProps {
   questions: Question[];
   onComplete?: (answers: Record<number, string | string[]>) => void;
   nextPageUrl?: string;
+  nextPageButtonText?: string;
 }
 
 export default function Survey({
   questions,
   onComplete,
   nextPageUrl = '/search',
+  nextPageButtonText = 'Áfram',
 }: SurveyProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
@@ -279,7 +281,7 @@ export default function Survey({
               href={nextPageUrl}
               className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
             >
-              Finna bækur 🚀
+              {nextPageButtonText}
             </Link>
           )}
         </motion.div>

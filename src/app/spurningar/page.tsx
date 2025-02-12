@@ -81,5 +81,11 @@ export default function QuestionsPage() {
     },
   ];
 
-  return <Survey questions={questions} nextPageUrl='/leit' />;
+  return (
+    <Survey
+      questions={questions}
+      nextPageUrl='/leit'
+      nextPageButtonText='Finna bækur 🚀'
+    />
+  );
 }
