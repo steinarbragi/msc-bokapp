@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
 
 interface Question {
   id: number;
@@ -12,6 +13,11 @@ interface Question {
   options?: string[];
   allowTextInput?: boolean;
 }
+
+// Change the FormValues type to have a flat structure
+type FormValues = {
+  [key: `question${number}`]: string | string[];
+};
 
 interface SurveyProps {
   questions: Question[];
@@ -27,70 +33,40 @@ export default function Survey({
   nextPageButtonText = 'Áfram',
 }: SurveyProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
-  const [textAnswers, setTextAnswers] = useState<Record<number, string>>({});
   const router = useRouter();
+
+  const { control, handleSubmit, watch } = useForm<FormValues>({
+    defaultValues: {},
+  });
 
   const currentQuestion = questions[currentStep];
   const isLastQuestion = currentStep === questions.length - 1;
-  const isComplete =
-    Object.keys(answers).length === questions.length &&
-    Object.values(answers).every(
-      answer =>
-        answer !== undefined &&
-        answer !== null &&
-        (Array.isArray(answer) ? answer.length > 0 : answer !== '')
-    );
+  const answers = watch();
 
-  const handleNextStep = () => {
-    if (!isLastQuestion) {
-      setCurrentStep(prev => prev + 1);
-    } else if (onComplete) {
-      onComplete(answers);
+  const isComplete = Object.keys(answers).length === questions.length;
+
+  const onSubmit = (data: FormValues) => {
+    if (onComplete) {
+      const transformedAnswers = Object.entries(data).reduce(
+        (acc, [key, value]) => {
+          const id = parseInt(key.replace('question', ''));
+          acc[id] = value;
+          return acc;
+        },
+        {} as Record<number, string | string[]>
+      );
+
+      onComplete(transformedAnswers);
       router.push(nextPageUrl);
     }
   };
 
-  const updateAnswer = (questionId: number, answer: string | string[]) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: answer,
-    }));
-  };
-
-  const handleMultiChoiceAnswer = (option: string) => {
-    const currentAnswers = (answers[currentQuestion.id] as string[]) || [];
-    const newAnswers = currentAnswers.includes(option)
-      ? currentAnswers.filter(a => a !== option)
-      : [...currentAnswers, option];
-
-    if (newAnswers.length === 0) {
-      const updatedAnswers = { ...answers };
-      delete updatedAnswers[currentQuestion.id];
-      setAnswers(updatedAnswers);
+  const handleNextStep = () => {
+    if (!isLastQuestion) {
+      setCurrentStep(prev => prev + 1);
     } else {
-      updateAnswer(currentQuestion.id, newAnswers);
+      handleSubmit(onSubmit)();
     }
-  };
-
-  const handleSingleChoiceAnswer = (option: string) => {
-    updateAnswer(currentQuestion.id, option);
-    handleNextStep();
-  };
-
-  const handleTextSubmit = () => {
-    const answer = textAnswers[currentQuestion.id];
-    if (answer?.trim()) {
-      updateAnswer(currentQuestion.id, answer);
-      handleNextStep();
-    }
-  };
-
-  const handleSkip = () => {
-    const newAnswers = { ...answers };
-    delete newAnswers[currentQuestion.id];
-    setAnswers(newAnswers);
-    handleNextStep();
   };
 
   const renderProgressBar = () => (
@@ -117,7 +93,7 @@ export default function Survey({
           className={`h-8 w-8 rounded-full ${
             index === currentStep
               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-              : answers[question.id]
+              : answers[`question${question.id}`]
                 ? 'bg-green-500 text-white'
                 : index < currentStep
                   ? 'bg-white/80 text-purple-600'
@@ -134,86 +110,86 @@ export default function Survey({
     switch (currentQuestion.type) {
       case 'multiple-choice':
         return (
-          <div>
-            <p className='mb-4 italic text-gray-600'>
-              Þú getur valið fleiri en einn valmöguleika
-            </p>
-            <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-              {currentQuestion.options?.map(option => {
-                const currentAnswers =
-                  (answers[currentQuestion.id] as string[]) || [];
-                const isSelected = currentAnswers.includes(option);
-
-                return (
+          <Controller<FormValues>
+            name={`question${currentQuestion.id}`}
+            control={control}
+            defaultValue={[]}
+            render={({ field }) => (
+              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+                {currentQuestion.options?.map(option => (
                   <motion.button
                     key={option}
-                    onClick={() => handleMultiChoiceAnswer(option)}
+                    onClick={() => {
+                      const currentValues = (field.value as string[]) || [];
+                      const newValues = currentValues.includes(option)
+                        ? currentValues.filter(v => v !== option)
+                        : [...currentValues, option];
+                      field.onChange(newValues);
+                    }}
                     className={`w-full rounded-xl border-2 ${
-                      isSelected
+                      ((field.value as string[]) || []).includes(option)
                         ? 'border-purple-300 bg-purple-50'
                         : 'border-gray-200'
-                    } p-4 text-left transition-all hover:scale-[1.02] hover:border-purple-300 hover:shadow-md`}
+                    } p-4 text-left`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     {option}
                   </motion.button>
-                );
-              })}
-            </div>
-          </div>
+                ))}
+              </div>
+            )}
+          />
         );
 
       case 'single-choice':
         return (
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-            {currentQuestion.options?.map(option => (
-              <motion.button
-                key={option}
-                onClick={() => handleSingleChoiceAnswer(option)}
-                className={`w-full rounded-xl border-2 ${
-                  answers[currentQuestion.id] === option
-                    ? 'border-purple-300 bg-purple-50'
-                    : 'border-gray-200'
-                } p-4 text-left transition-all hover:scale-[1.02] hover:border-purple-300 hover:shadow-md`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {option}
-              </motion.button>
-            ))}
-          </div>
+          <Controller<FormValues>
+            name={`question${currentQuestion.id}`}
+            control={control}
+            render={({ field }) => (
+              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+                {currentQuestion.options?.map(option => (
+                  <motion.button
+                    key={option}
+                    onClick={() => {
+                      field.onChange(option);
+                      handleNextStep();
+                    }}
+                    className={`w-full rounded-xl border-2 ${
+                      field.value === option
+                        ? 'border-purple-300 bg-purple-50'
+                        : 'border-gray-200'
+                    } p-4 text-left`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {option}
+                  </motion.button>
+                ))}
+              </div>
+            )}
+          />
         );
 
       case 'text':
         return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className='flex flex-col gap-4 sm:flex-row'
-          >
-            <input
-              type='text'
-              value={textAnswers[currentQuestion.id] || ''}
-              onChange={e =>
-                setTextAnswers(prev => ({
-                  ...prev,
-                  [currentQuestion.id]: e.target.value,
-                }))
-              }
-              onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
-              className='flex-1 rounded-xl border-2 border-gray-200 p-4 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
-              placeholder='Skrifaðu svar hér...'
-            />
-            <motion.button
-              onClick={handleTextSubmit}
-              className='rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg'
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Svara
-            </motion.button>
-          </motion.div>
+          <Controller<FormValues>
+            name={`question${currentQuestion.id}`}
+            control={control}
+            render={({ field }) => (
+              <input
+                type='text'
+                value={(field.value as string) || ''}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+                className='w-full rounded-xl border-2 border-gray-200 p-4'
+                placeholder='Skrifaðu svar hér...'
+              />
+            )}
+          />
         );
     }
   };
@@ -222,9 +198,9 @@ export default function Survey({
     return (
       !isLastQuestion &&
       !isComplete &&
-      (!answers[currentQuestion.id] ||
-        (Array.isArray(answers[currentQuestion.id]) &&
-          (answers[currentQuestion.id] as string[]).length === 0))
+      (!answers[`question${currentQuestion.id}`] ||
+        (Array.isArray(answers[`question${currentQuestion.id}`]) &&
+          (answers[`question${currentQuestion.id}`] as string[]).length === 0))
     );
   };
 
@@ -258,23 +234,25 @@ export default function Survey({
 
           {shouldShowSkipButton() && (
             <button
-              onClick={handleSkip}
+              onClick={() => handleNextStep()}
               className='mt-4 w-full rounded-xl border-2 border-gray-200 p-3 text-gray-500 transition-all hover:scale-[1.02] hover:border-gray-300 hover:text-gray-700'
             >
               Sleppa spurningu
             </button>
           )}
 
-          {!isLastQuestion && !isComplete && answers[currentQuestion.id] && (
-            <motion.button
-              onClick={handleNextStep}
-              className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Áfram
-            </motion.button>
-          )}
+          {!isLastQuestion &&
+            !isComplete &&
+            answers[`question${currentQuestion.id}`] && (
+              <motion.button
+                onClick={handleNextStep}
+                className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Áfram
+              </motion.button>
+            )}
 
           {(isComplete || isLastQuestion) && (
             <Link
