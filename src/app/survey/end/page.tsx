@@ -52,29 +52,23 @@ export default function QuestionsPage() {
     },
     {
       id: 5,
-      text: 'Hefurðu lesið einhverjar af þessum bókum áður?',
-      type: 'multiple-choice',
-      options: ['Já, allar', 'Já, sumar', 'Nei, engar'],
-    },
-    {
-      id: 6,
       text: 'Myndir þú vilja lesa einhverjar af þessum bókum?',
       type: 'multiple-choice',
       options: ['Já, allar', 'Já, sumar', 'Kannski eina', 'Nei, engar'],
     },
     {
-      id: 7,
+      id: 6,
       text: 'Myndir þú nota þessa vefsíðu aftur til að finna bækur?',
       type: 'multiple-choice',
       options: ['Já, örugglega', 'Kannski', 'Nei'],
     },
     {
-      id: 8,
+      id: 7,
       text: 'Hvað fannst þér skemmtilegast við þessa vefsíðu?',
       type: 'text',
     },
     {
-      id: 9,
+      id: 8,
       text: 'Hvað myndi gera vefsíðuna betri?',
       type: 'text',
     },
