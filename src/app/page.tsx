@@ -41,19 +41,13 @@ export default function Home() {
               <li className='flex items-center'>
                 <span className='mr-2 text-2xl'>📚</span>
                 <span className='text-lg'>
-                  Deildu með okkur uppáhaldsbókunum þínum
+                  Deildu með okkur bókunum sem þú hefur lesið áður
                 </span>
               </li>
               <li className='flex items-center'>
                 <span className='mr-2 text-2xl'>✨</span>
                 <span className='text-lg'>
                   Töfravélin finnur bækur fyrir þig
-                </span>
-              </li>
-              <li className='flex items-center'>
-                <span className='mr-2 text-2xl'>🌟</span>
-                <span className='text-lg'>
-                  Segðu okkur hvernig þér fannst þetta virka
                 </span>
               </li>
             </ul>
