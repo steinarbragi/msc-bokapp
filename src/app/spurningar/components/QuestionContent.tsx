@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Control, Controller } from 'react-hook-form';
+import { Pencil } from 'lucide-react';
 import { Question } from '../types';
 import { FormValues } from '../types';
 
@@ -46,16 +47,16 @@ export function QuestionContent({
                   </motion.button>
                 ))}
                 {question.allowTextInput && (
-                  <div className='flex gap-2'>
+                  <div className='relative w-full'>
                     <input
                       type='text'
-                      placeholder='Annað...'
-                      className={`flex-1 rounded-xl border-2 p-4 ${
+                      placeholder='Annað... (skrifa eigið svar)'
+                      className={`w-full rounded-xl border-2 p-4 pr-12 shadow-sm focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200 ${
                         ((field.value as string[]) || []).find(
                           v => !question.options?.includes(v)
                         )
                           ? 'border-purple-300 bg-purple-50'
-                          : 'border-gray-200'
+                          : 'border-gray-200 bg-white'
                       }`}
                       value={
                         ((field.value as string[]) || []).find(
@@ -76,6 +77,9 @@ export function QuestionContent({
                         field.onChange(newValues);
                       }}
                     />
+                    <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4'>
+                      <Pencil className='h-6 w-6 text-gray-400' />
+                    </div>
                   </div>
                 )}
               </div>
