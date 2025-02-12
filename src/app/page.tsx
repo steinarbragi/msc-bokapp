@@ -18,13 +18,13 @@ export default function Home() {
       <main className='mx-auto mt-12 max-w-2xl'>
         <div className='transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl transition-transform hover:scale-[1.02]'>
           <h2 className='mb-6 text-3xl font-bold text-purple-600'>
-            Spennandi ævintýri! 🎮
+            Viltu finna bók?
           </h2>
 
           <p className='mb-6 text-lg'>
-            Þetta er töfrandi ferðalag þar sem við notum galdra gervigreindar
-            til að hjálpa þér að finna bestu bækurnar! Við spyrjum þig nokkurra
-            spurninga og töfravélin okkar finnur bækur fyrir þig! 🌟
+            Við notum gervigreind til að hjálpa þér að finna bækur sem þú gætir
+            haft gaman af. Við spyrjum þig nokkurra spurninga og mælum með bókum
+            sem gætu hentað þér vel.
           </p>
 
           <div className='mb-8'>
@@ -69,8 +69,8 @@ export default function Home() {
           </div>
 
           <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
-            Fyrir unga ævintýraþyrsta lesendur 6-11 ára. Öll gögn eru nafnlaus
-            og geymd eins og fjársjóður í öruggum kastala 🏰
+            Fyrir börn á aldrinum 6-11 ára. Öll gögn eru nafnlaus og meðhöndluð
+            af öryggi.
           </p>
         </div>
       </main>
