@@ -95,14 +95,22 @@ export default function SearchPage() {
   return (
     <div className='min-h-screen p-8'>
       <div className='mx-auto max-w-4xl'>
-        <h1 className='mb-8 text-3xl font-bold'>Leitaðu að bókum</h1>
+        <h1 className='mb-8 text-3xl font-bold'>Bókaleit</h1>
+
+        <div className='mb-8 rounded-lg bg-blue-50 p-4 text-sm text-blue-700'>
+          <p>
+            Við munum nota svörin úr könnuninni til að útbúa bókalýsingu. Hún
+            verður borin saman við lýsingar í bókagrunninum okkar til að finna
+            viðeigandi bækur. Það er enn í vinnslu.
+          </p>
+        </div>
 
         <div className='mb-8 flex gap-4'>
           <input
             type='text'
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder='Sláðu inn leitarorð...'
+            placeholder='Sláðu inn bókalýsingu...'
             className='flex-1 rounded-lg border p-3 shadow-sm'
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
           />
@@ -113,14 +121,6 @@ export default function SearchPage() {
           >
             {isLoading ? 'Leita...' : 'Leita'}
           </button>
-        </div>
-
-        <div className='mb-8 rounded-lg bg-blue-50 p-4 text-sm text-blue-700'>
-          <p>
-            Við munum nota svörin úr könnuninni til að búa til leitarstreng. Það
-            á eftir að útfæra það. Það er líka hægt að leita sjálf/ur með því að
-            skrifa leitarorð.
-          </p>
         </div>
 
         <div className='flex justify-center'>
