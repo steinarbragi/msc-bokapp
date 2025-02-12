@@ -25,20 +25,9 @@ export default function QuestionsPage() {
       type: 'multiple-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
     },
+
     {
       id: 3,
-      text: 'Hvað lestu margar bækur?',
-      type: 'multiple-choice',
-      options: [
-        '1-6 bækur á ári',
-        '7-12 bækur á ári',
-        '1-2 bækur á mánuði',
-        '3-5 bækur á mánuði',
-        'Meira en 5 bækur á mánuði',
-      ],
-    },
-    {
-      id: 4,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
       type: 'multiple-choice',
       options: [
@@ -50,7 +39,7 @@ export default function QuestionsPage() {
       ],
     },
     {
-      id: 5,
+      id: 4,
       text: 'Hvernig á aðalsögupersónan að vera?',
       type: 'multiple-choice',
       options: [
@@ -62,7 +51,7 @@ export default function QuestionsPage() {
       ],
     },
     {
-      id: 6,
+      id: 5,
       text: 'Hvað viltu að gerist í sögunni?',
       type: 'multiple-choice',
       options: [
@@ -74,7 +63,7 @@ export default function QuestionsPage() {
       ],
     },
     {
-      id: 7,
+      id: 6,
       text: 'Hvar á sagan að gerast?',
       type: 'multiple-choice',
       options: [
@@ -87,5 +76,5 @@ export default function QuestionsPage() {
     },
   ];
 
-  return <Survey questions={questions} nextPageUrl='/search' />;
+  return <Survey questions={questions} nextPageUrl='/leit' />;
 }

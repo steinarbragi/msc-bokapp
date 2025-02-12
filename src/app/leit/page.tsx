@@ -127,7 +127,7 @@ export default function SearchPage() {
 
         <div className='flex justify-center'>
           <Link
-            href='/survey/end'
+            href='/spurningar/konnun'
             className='mb-8 inline-block rounded-xl border-2 border-purple-300 bg-purple-50 px-8 py-4 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'
           >
             Svara stuttri könnun um vefsíðuna

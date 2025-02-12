@@ -52,7 +52,7 @@ export default function Home() {
 
         <div className='flex justify-center'>
           <Link
-            href='/survey'
+            href='/spurningar'
             className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:px-8'
           >
             Hefjum ævintýrið! 🚀

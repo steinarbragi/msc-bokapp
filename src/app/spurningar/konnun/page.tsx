@@ -64,15 +64,27 @@ export default function QuestionsPage() {
     },
     {
       id: 7,
+      text: 'Hvað lestu margar bækur?',
+      type: 'multiple-choice',
+      options: [
+        '1-6 bækur á ári',
+        '7-12 bækur á ári',
+        '1-2 bækur á mánuði',
+        '3-5 bækur á mánuði',
+        'Meira en 5 bækur á mánuði',
+      ],
+    },
+    {
+      id: 8,
       text: 'Hvað fannst þér skemmtilegast við þessa vefsíðu?',
       type: 'text',
     },
     {
-      id: 8,
+      id: 9,
       text: 'Hvað myndi gera vefsíðuna betri?',
       type: 'text',
     },
   ];
 
-  return <Survey questions={questions} nextPageUrl='/thanks' />;
+  return <Survey questions={questions} nextPageUrl='/takk' />;
 }
