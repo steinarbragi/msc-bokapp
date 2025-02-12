@@ -33,7 +33,11 @@ export default function Survey({
   const currentQuestion = questions[currentStep];
   const isLastQuestion = currentStep === questions.length - 1;
   const answers = watch();
-  const isComplete = Object.keys(answers).length === questions.length;
+  const isComplete =
+    Object.keys(answers).every(key => {
+      const answer = answers[key as keyof FormValues];
+      return answer && (!Array.isArray(answer) || answer.length > 0);
+    }) && Object.keys(answers).length === questions.length;
 
   const onSubmit = (data: FormValues) => {
     if (onComplete) {
