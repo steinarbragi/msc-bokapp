@@ -53,13 +53,13 @@ export default function Home() {
         <div className='flex justify-center'>
           <Link
             href='/survey'
-            className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
+            className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:px-8'
           >
             Hefjum ævintýrið! 🚀
           </Link>
         </div>
 
-        <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
+        <p className='mt-8 rounded-xl bg-purple-50 py-4 text-base text-gray-600'>
           Fyrir börn á aldrinum 6-11 ára. Gögnum er safnað í rannsóknarskyni.
           Öll gögn eru nafnlaus og meðhöndluð af öryggi.
         </p>
