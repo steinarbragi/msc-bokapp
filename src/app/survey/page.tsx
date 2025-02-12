@@ -17,7 +17,7 @@ export default function QuestionsPage() {
       id: 1,
       text: 'Hvað lýsir þér best?',
       type: 'multiple-choice',
-      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🥷'],
+      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
     },
     {
       id: 2,
