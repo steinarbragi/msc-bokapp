@@ -94,7 +94,7 @@ export default function QuestionsPage() {
         'Í geimnum 🛸',
         'Í undirdjúpunum 🌊',
         'Í ævintýralandi 🎪',
-        'Í fornöld ⚔️',
+        'Á fornöld ⚔️',
         'Í draugahúsi 👻',
         'Í dýragarði 🦁',
         'Á eyðieyju 🏝️',
