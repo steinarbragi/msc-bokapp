@@ -81,13 +81,13 @@ export default function Survey({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='min-h-screen p-8'
+      className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20'
     >
       <div className='mx-auto max-w-2xl'>
         <div className='mb-8'>
-          <div className='h-2 rounded-full bg-gray-200'>
+          <div className='h-2 rounded-full bg-white/50'>
             <motion.div
-              className='h-2 rounded-full bg-blue-600'
+              className='h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600'
               initial={{ width: 0 }}
               animate={{
                 width: `${((currentStep + 1) / questions.length) * 100}%`,
@@ -104,11 +104,11 @@ export default function Survey({
               onClick={() => setCurrentStep(index)}
               className={`h-8 w-8 rounded-full ${
                 index === currentStep
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                   : index < currentStep
-                    ? 'bg-blue-200 text-blue-800'
-                    : 'bg-gray-200 text-gray-600'
-              } flex items-center justify-center font-medium transition-colors hover:bg-blue-500 hover:text-white`}
+                    ? 'bg-white/80 text-purple-600'
+                    : 'bg-white/50 text-gray-600'
+              } flex items-center justify-center font-medium transition-all hover:scale-105`}
             >
               {index + 1}
             </button>
@@ -122,30 +122,27 @@ export default function Survey({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -50, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className='rounded-lg bg-white p-8 shadow-lg'
+            className='transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'
           >
             <motion.h1
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className='mb-6 text-2xl font-bold'
+              className='mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent'
             >
               {questions[currentStep].text}
             </motion.h1>
 
             {questions[currentStep].type === 'multiple-choice' && (
               <div className='space-y-4'>
-                {questions[currentStep].options?.map((option, index) => (
+                {questions[currentStep].options?.map(option => (
                   <motion.button
                     key={option}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
                     onClick={() => handleAnswer(option)}
-                    className={`w-full rounded-lg border-2 ${
+                    className={`w-full rounded-xl border-2 ${
                       answers[questions[currentStep].id] === option
-                        ? 'border-blue-600 bg-blue-50'
+                        ? 'border-purple-300 bg-purple-50'
                         : 'border-gray-200'
-                    } p-4 text-left hover:border-blue-600`}
+                    } p-4 text-left transition-all hover:scale-[1.02] hover:border-purple-300 hover:shadow-md`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -171,15 +168,12 @@ export default function Survey({
                     }))
                   }
                   onKeyDown={e => e.key === 'Enter' && handleTextSubmit()}
-                  className='flex-1 rounded-lg border-2 border-gray-200 p-4 focus:border-blue-600 focus:outline-none'
+                  className='flex-1 rounded-xl border-2 border-gray-200 p-4 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
                   placeholder='Skrifaðu svar hér...'
                 />
                 <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
                   onClick={handleTextSubmit}
-                  className='rounded-lg bg-blue-600 px-8 py-4 text-white hover:bg-blue-700'
+                  className='rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg'
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -191,7 +185,7 @@ export default function Survey({
             {!isComplete && currentStep < questions.length && (
               <button
                 onClick={handleSkip}
-                className='mt-4 w-full rounded-lg border-2 border-gray-200 p-3 text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                className='mt-4 w-full rounded-xl border-2 border-gray-200 p-3 text-gray-500 transition-all hover:scale-[1.02] hover:border-gray-300 hover:text-gray-700'
               >
                 Sleppa spurningu
               </button>
@@ -200,9 +194,9 @@ export default function Survey({
             {isComplete && (
               <Link
                 href={nextPageUrl}
-                className='mt-12 flex w-full justify-center rounded-full bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
+                className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
               >
-                Finna bækur
+                Finna bækur 🚀
               </Link>
             )}
           </motion.div>
