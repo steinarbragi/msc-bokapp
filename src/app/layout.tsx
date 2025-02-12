@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Bókagreind',
+  title: 'Bókavélin',
   description: 'Gervigreind sem hjálpar börnum að finna bækur',
 };
 

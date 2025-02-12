@@ -6,7 +6,7 @@ export default function Home() {
       <header className='text-center'>
         <h1
           className='mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-5xl font-bold text-transparent'
-          aria-label='Bokagreind - Find your next favorite book'
+          aria-label='Bókavélin - Finndu næstu uppáhaldsbókina þína'
         >
           Bókavélin
         </h1>
