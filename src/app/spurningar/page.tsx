@@ -48,7 +48,7 @@ export default function QuestionsPage() {
     },
     {
       id: 4,
-      text: 'Hvaða eiginleika ætti aðalpersónan að hafa?',
+      text: 'Hvernig ætti aðalpersónan að vera?',
       type: 'multiple-choice',
       options: [
         'Hugrökk 🦁',
