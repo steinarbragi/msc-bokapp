@@ -81,7 +81,7 @@ export default function Survey({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20'
+      className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 px-3 py-20 font-[family-name:var(--font-geist-sans)] sm:p-20'
     >
       <div className='mx-auto max-w-2xl'>
         <div className='mb-8'>
