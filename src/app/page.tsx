@@ -8,7 +8,7 @@ export default function Home() {
           className='mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-5xl font-bold text-transparent'
           aria-label='Bokagreind - Find your next favorite book'
         >
-          Bókagreind
+          Bókavélin
         </h1>
         <p className='text-xl font-medium text-gray-700'>
           Finndu næstu uppáhaldsbókina þína! ✨📚
