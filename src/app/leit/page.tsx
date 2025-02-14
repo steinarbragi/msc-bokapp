@@ -109,8 +109,8 @@ export default function SearchPage() {
           <p>
             Þessi hluti er enn í vinnslu. Við munum nota svörin úr könnuninni
             til að útbúa bókalýsingu. Hún verður borin saman við lýsingar í
-            bókagrunninum okkar til að finna viðeigandi bækur. Þangað til
-            geturðu prófað að skrifa lýsingu á þinni draumabók. Hér er dæmi.
+            bókagrunninum okkar til að finna viðeigandi bækur. Þangað til getur
+            þú prófað að skrifa lýsingu á þinni draumabók. Hér er sýnishorn.
           </p>
         </div>
 
