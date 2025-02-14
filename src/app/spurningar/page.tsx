@@ -9,13 +9,18 @@ export default function QuestionsPage() {
   const router = useRouter();
   const { setCoverDescription } = useBook();
   const questions: Question[] = [
+    // I would like to give this question more thought before I add it
+    /*
     {
       id: 1,
       text: 'Hvað lýsir þér best?',
       key: 'reader-gender',
       type: 'single-choice',
       options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
-    },
+      }, 
+    */
+
+    // Find a better way to select age?
     {
       id: 2,
       text: 'Hvaða aldurshópi tilheyrir þú?',
@@ -23,7 +28,6 @@ export default function QuestionsPage() {
       type: 'single-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
     },
-
     {
       id: 3,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
