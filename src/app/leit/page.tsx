@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query) return;
 
     setIsLoading(true);
@@ -81,7 +81,12 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [query]);
+  useEffect(() => {
+    if (coverDescription) {
+      handleSearch();
+    }
+  }, [coverDescription, handleSearch]);
 
   return (
     <div className='mx-auto max-w-4xl'>

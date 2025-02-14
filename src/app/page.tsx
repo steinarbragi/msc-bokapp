@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
@@ -73,13 +72,6 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <Image
-        src='/hi/logo/Tákn blátt.svg'
-        alt='Háskóli Íslands'
-        width={100}
-        height={100}
-        className='mx-auto mt-10'
-      />
     </main>
   );
 }
