@@ -9,19 +9,17 @@ export default function QuestionsPage() {
   const router = useRouter();
   const { setCoverDescription } = useBook();
   const questions: Question[] = [
-    // Ég vil hugsa þessa spurningu og orða hana vel.
-    /*
     {
       id: 1,
-      text: 'Hvað lýsir þér best?',
+      text: 'Hvað lýsir þér best?', // Ég vil hugsa þessa spurningu og orða hana vel.
       key: 'reader-gender',
       type: 'single-choice',
       options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
-      }, 
-    */
+    },
+
     {
       id: 2,
-      text: 'Á hvaða aldri ert þú?', // Þetta má örugglega orða betur.
+      text: 'Á hvaða aldri ert þú?', // Þetta má kannski orða betur?
       key: 'reader-age',
       type: 'single-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'], // Kannski bara 1 text field?
