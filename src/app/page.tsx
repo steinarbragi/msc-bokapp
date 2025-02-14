@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
@@ -59,11 +60,22 @@ export default function Home() {
           </Link>
         </div>
 
-        <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
-          Fyrir börn á aldrinum 6-11 ára. Vefurinn er enn í þróun. Gögnum verður
-          safnað fyrir rannsóknarverkefni á vegum Háskóla Íslands.
-        </p>
+        <div className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
+          <p>
+            Vefurinn er enn í stöðugri þróun. Kerfið er ætlað börnum á aldrinum
+            6-11 ára. Markmiðið er að kanna getu gervigreindar til þess að auka
+            lestraráhuga barna, með því að veita persónuleg bókameðmæli. Gögnum
+            verður safnað fyrir rannsóknarverkefni á vegum Háskóla Íslands.
+          </p>
+        </div>
       </div>
+      <Image
+        src='/hi/logo/Tákn blátt.svg'
+        alt='Háskóli Íslands'
+        width={100}
+        height={100}
+        className='mx-auto mt-4'
+      />
     </main>
   );
 }
