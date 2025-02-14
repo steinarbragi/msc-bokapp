@@ -1,7 +1,7 @@
 'use client';
 
 import Survey from '../survey';
-
+import { useRouter } from 'next/navigation';
 interface Question {
   id: number;
   text: string;
@@ -10,6 +10,7 @@ interface Question {
 }
 
 export default function SurveyPage() {
+  const router = useRouter();
   const questions: Question[] = [
     {
       id: 1,
@@ -89,8 +90,11 @@ export default function SurveyPage() {
   return (
     <Survey
       questions={questions}
-      nextPageUrl='/takk'
-      nextPageButtonText='Ljúka könnun 🙏'
+      submitButtonText='Ljúka könnun 🙏'
+      onComplete={answers => {
+        console.log('Survey answers:', answers);
+        router.push('/takk');
+      }}
     />
   );
 }

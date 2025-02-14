@@ -22,6 +22,7 @@ export function SingleChoiceQuestion({
           {question.options?.map(option => (
             <motion.button
               key={option}
+              type='button'
               onClick={() => {
                 const newValue = field.value === option ? '' : option;
                 field.onChange(newValue);

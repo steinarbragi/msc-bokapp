@@ -1,6 +1,7 @@
 'use client';
 
 import Survey from './survey';
+import { useRouter } from 'next/navigation';
 
 type QuestionType = 'text' | 'multiple-choice' | 'slider' | 'single-choice';
 
@@ -13,6 +14,7 @@ interface Question {
 }
 
 export default function QuestionsPage() {
+  const router = useRouter();
   const questions: Question[] = [
     {
       id: 1,
@@ -109,8 +111,11 @@ export default function QuestionsPage() {
   return (
     <Survey
       questions={questions}
-      nextPageUrl='/leit'
-      nextPageButtonText='Finna bækur 🚀'
+      submitButtonText='Finna bækur 🚀'
+      onComplete={answers => {
+        console.log('Survey answers:', answers);
+        router.push('/leit');
+      }}
     />
   );
 }

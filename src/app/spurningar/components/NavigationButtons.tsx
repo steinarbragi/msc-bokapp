@@ -1,13 +1,11 @@
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 
 interface NavigationButtonsProps {
   isLastQuestion: boolean;
   isComplete: boolean;
   currentAnswer: string | string[];
   onNextStep: () => void;
-  nextPageUrl: string;
-  nextPageButtonText: string;
+  submitButtonText: string;
 }
 
 export function NavigationButtons({
@@ -15,8 +13,7 @@ export function NavigationButtons({
   isComplete,
   currentAnswer,
   onNextStep,
-  nextPageUrl,
-  nextPageButtonText,
+  submitButtonText,
 }: NavigationButtonsProps) {
   const shouldShowSkip =
     !isLastQuestion &&
@@ -35,6 +32,7 @@ export function NavigationButtons({
     <>
       {shouldShowSkip && (
         <button
+          type='button'
           onClick={onNextStep}
           className='mt-4 w-full rounded-xl border-2 border-gray-200 p-3 text-gray-500 transition-all hover:scale-[1.02] hover:border-gray-300 hover:text-gray-700'
         >
@@ -44,6 +42,7 @@ export function NavigationButtons({
 
       {shouldShowNext && (
         <motion.button
+          type='button'
           onClick={onNextStep}
           className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
           whileHover={{ scale: 1.02 }}
@@ -54,12 +53,12 @@ export function NavigationButtons({
       )}
 
       {(isComplete || isLastQuestion) && (
-        <Link
-          href={nextPageUrl}
+        <button
+          type='submit'
           className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
         >
-          {nextPageButtonText}
-        </Link>
+          {submitButtonText}
+        </button>
       )}
     </>
   );
