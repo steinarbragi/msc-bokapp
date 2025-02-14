@@ -101,7 +101,10 @@ export default function SearchPage() {
       </h1>
 
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
-        <h2>Athugið!</h2>
+        <h2 className='mb-4 text-lg font-semibold text-purple-800'>
+          Athugið, textinn er bara sýnishorn og er ekki byggður á þínum svörum
+          eins og er.
+        </h2>
         <div className='mb-8 rounded-lg bg-purple-50 p-4 text-sm text-purple-700'>
           <p>
             Þessi hluti er enn í vinnslu. Við munum nota svörin úr könnuninni
