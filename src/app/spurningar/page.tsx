@@ -9,7 +9,10 @@ export default function QuestionsPage() {
   const router = useRouter();
   const { setCoverDescription } = useBook();
   const questions: Question[] = [
-    // I would like to give this question more thought before I add it
+    // Ég vil hugsa þessa spurningu betur.
+    // Skiptir kyn notanda máli fyrir bókalýsinguna?
+    // Ætti þetta frekar að vera í rannsóknarkönnun?
+    // Þetta er delicate spurning, sem getur stuðað mismunandi hópa af mismunandi ástæðum.
     /*
     {
       id: 1,
