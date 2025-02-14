@@ -20,7 +20,7 @@ export default function ThanksPage() {
 
         <Link
           href='/'
-          className='inline-block rounded-lg bg-blue-600 px-8 py-3 text-white transition-colors hover:bg-blue-700'
+          className='mb-8 rounded-xl border-2 border-purple-300 bg-purple-50 px-6 py-4 text-center text-lg font-bold text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'
         >
           Fara aftur á forsíðu
         </Link>
