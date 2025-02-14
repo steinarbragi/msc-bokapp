@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Loader } from 'lucide-react';
 
 interface NavigationButtonsProps {
   isLastQuestion: boolean;
@@ -6,6 +7,7 @@ interface NavigationButtonsProps {
   currentAnswer: unknown;
   onNextStep: () => void;
   submitButtonText: string;
+  isLoading: boolean;
 }
 
 export function NavigationButtons({
@@ -14,6 +16,7 @@ export function NavigationButtons({
   currentAnswer,
   onNextStep,
   submitButtonText,
+  isLoading,
 }: NavigationButtonsProps) {
   const hasAnswer =
     typeof currentAnswer === 'string'
@@ -54,7 +57,7 @@ export function NavigationButtons({
           type='submit'
           className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
         >
-          {submitButtonText}
+          {isLoading ? <Loader className='animate-spin' /> : submitButtonText}
         </button>
       )}
     </>
