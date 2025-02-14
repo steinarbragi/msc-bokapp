@@ -10,7 +10,7 @@ export default function ThanksPage() {
       animate={{ opacity: 1 }}
       className='flex min-h-screen flex-col items-center justify-center p-8 text-center'
     >
-      <div className='max-w-2xl'>
+      <div className='mb-20 max-w-2xl'>
         <h1 className='mb-6 text-3xl font-bold'>Takk fyrir þátttökuna!</h1>
 
         <p className='mb-8 text-xl'>
