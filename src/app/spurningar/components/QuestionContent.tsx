@@ -8,6 +8,7 @@ interface QuestionContentProps {
   question: Question;
   control: Control<FormValues>;
   onNextStep?: () => void;
+  name: string;
 }
 
 export function QuestionContent({
