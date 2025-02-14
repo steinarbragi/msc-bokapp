@@ -8,7 +8,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { StepButtons } from './components/StepButtons';
 import { QuestionContent } from './components/QuestionContent';
 import { NavigationButtons } from './components/NavigationButtons';
-import { Loader } from 'lucide-react';
+import Loader from '@/components/loader';
 import Link from 'next/link';
 
 interface SurveyProps {
@@ -75,8 +75,9 @@ export default function Survey({
 
   if (isLoading) {
     return (
-      <div className='flex h-screen items-center justify-center'>
-        <Loader className='animate-spin' />
+      <div className='flex min-h-screen flex-col items-center justify-center pb-48'>
+        <Loader />
+        <p className='pt-5 text-center text-lg'>Bókavélin er að hugsa</p>
       </div>
     );
   }
