@@ -24,13 +24,10 @@ ${surveyResponses['main-character-traits']?.join('\n')}
 Plot Elements:
 ${surveyResponses['story-plot']?.join('\n')}
 
-Please describe in detail what the ideal book cover should look like for this reader. Include:
-
-- Any text treatment suggestions
-Keep the description focused on the textual description of the book and it's plot.`;
+Please describe in detail what the ideal book back cover should look like for this reader. Keep the response focused on the back cover text description of the book and it's plot.`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 1000,
       messages: [
         {
