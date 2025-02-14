@@ -32,6 +32,7 @@ export function MultipleChoiceQuestion({
               {question.options?.map(option => (
                 <motion.button
                   key={option}
+                  type='button'
                   onClick={() => {
                     const currentValues = (field.value as string[]) || [];
                     const newValues = currentValues.includes(option)

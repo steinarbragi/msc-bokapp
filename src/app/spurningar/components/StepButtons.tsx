@@ -27,6 +27,7 @@ export function StepButtons({
         <button
           key={index}
           onClick={() => onStepClick(index)}
+          type='button'
           className={`h-8 w-8 rounded-full ${
             index === currentStep
               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
