@@ -10,29 +10,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { surveyResponses } = body;
 
-    // Format survey responses into a prompt for Claude
-    const prompt = `Based on the following survey responses from a child reader, suggest an ideal book cover description:
-
-Reader Profile:
-- Gender: ${surveyResponses['reader-gender']}
-- Age: ${surveyResponses['reader-age']} 
-- Favorite Genres: ${surveyResponses['reader-favorite-genre'].join(', ')}
-
-Character Preferences:
-${surveyResponses['main-character-traits']?.join('\n')}
-
-Plot Elements:
-${surveyResponses['story-plot']?.join('\n')}
-
-Please describe in detail what the ideal book back cover should look like for this reader. Keep the response focused on the back cover text description of the book and it's plot.`;
-
     const response = await anthropic.messages.create({
       model: 'claude-3-5-haiku-20241022',
       max_tokens: 1000,
       messages: [
         {
           role: 'user',
-          content: prompt,
+          content: `Generate a book back cover description for a reader with these preferences:
+            Gender: ${surveyResponses['reader-gender']}
+            Age: ${surveyResponses['reader-age']}
+            Favorite Genres: ${surveyResponses['reader-favorite-genre'].join(', ')}
+            Character Traits: ${surveyResponses['main-character-traits'].join(', ')}
+            Plot Elements: ${surveyResponses['story-plot'].join(', ')}`,
         },
       ],
     });
