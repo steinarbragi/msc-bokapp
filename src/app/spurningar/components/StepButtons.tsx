@@ -32,7 +32,7 @@ export function StepButtons({
             index === currentStep
               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
               : isAnswered(question.id.toString())
-                ? 'bg-green-500 text-white'
+                ? 'bg-purple-500 text-white'
                 : index < currentStep
                   ? 'bg-white/80 text-purple-600'
                   : 'bg-white/50 text-gray-600'
