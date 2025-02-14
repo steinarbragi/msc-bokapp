@@ -8,6 +8,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { StepButtons } from './components/StepButtons';
 import { QuestionContent } from './components/QuestionContent';
 import { NavigationButtons } from './components/NavigationButtons';
+import { Loader } from 'lucide-react';
 import Link from 'next/link';
 
 interface SurveyProps {
@@ -25,7 +26,7 @@ export default function Survey({
   const { control, handleSubmit, watch } = useForm<FormValues>({
     defaultValues: {},
   });
-
+  const [isLoading, setIsLoading] = useState(false);
   const currentQuestion = questions[currentStep];
   const isLastQuestion = currentStep === questions.length - 1;
   const answers = watch();
@@ -53,6 +54,7 @@ export default function Survey({
         {} as Record<string, string | string[]>
       );
 
+      setIsLoading(true);
       onComplete(transformedAnswers);
     }
   };
@@ -70,6 +72,14 @@ export default function Survey({
       setCurrentStep(prev => prev + 1);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <Loader className='animate-spin' />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -121,6 +131,7 @@ export default function Survey({
             <NavigationButtons
               isLastQuestion={isLastQuestion}
               isComplete={isComplete}
+              isLoading={isLoading}
               currentAnswer={watch(`question${currentQuestion.id}`)}
               onNextStep={handleNextStep}
               submitButtonText={submitButtonText}
