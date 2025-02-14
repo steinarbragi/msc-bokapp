@@ -111,7 +111,7 @@ export default function SearchPage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder='Sláðu inn bókalýsingu...'
-            className='h-48 flex-1 rounded-xl border-2 border-gray-200 p-4 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
+            className='h-24 flex-1 rounded-xl border-2 border-gray-200 p-4 opacity-30 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
           />
           <button
