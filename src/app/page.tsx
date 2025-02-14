@@ -74,7 +74,7 @@ export default function Home() {
         alt='Háskóli Íslands'
         width={100}
         height={100}
-        className='mx-auto mt-4'
+        className='mx-auto mt-10'
       />
     </main>
   );
