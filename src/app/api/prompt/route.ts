@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: 'user',
-          content: `Generate a book back cover description for a reader with these preferences:
+          content: `Generate a book back cover description in Icelandic for a reader with these preferences:
             Gender: ${surveyResponses['reader-gender']}
             Age: ${surveyResponses['reader-age']}
             Favorite Genres: ${surveyResponses['reader-favorite-genre'].join(', ')}
