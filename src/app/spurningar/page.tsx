@@ -11,18 +11,17 @@ export default function QuestionsPage() {
   const questions: Question[] = [
     {
       id: 1,
-      text: 'Hvað lýsir þér best?', // Ég vil hugsa þessa spurningu og orða hana vel.
-      key: 'reader-gender',
-      type: 'single-choice',
-      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
-    },
-
-    {
-      id: 2,
       text: 'Á hvaða aldri ert þú?', // Þetta má kannski orða betur?
       key: 'reader-age',
       type: 'single-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'], // Kannski bara 1 text field?
+    },
+    {
+      id: 2,
+      text: 'Hvað lýsir þér best?', // Ég vil hugsa þessa spurningu og orða hana vel.
+      key: 'reader-gender',
+      type: 'single-choice',
+      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
     },
     {
       id: 3,
