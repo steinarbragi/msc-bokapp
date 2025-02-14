@@ -96,6 +96,11 @@ export default function SearchPage() {
         </Link>
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
+        <p className='mb-6 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
+          Athugið: Þegar spurningum hefur verið svarað notum við svörin til að
+          útbúa bókalýsingu. Þessi lýsing er notuð til að leita að svipuðum
+          bókum en verður líklega ekki sýnileg í endanlegri útgáfu.
+        </p>
         <div className='mb-8 flex flex-col content-center items-center gap-4 sm:flex-row'>
           <textarea
             value={query}
