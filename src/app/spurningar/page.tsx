@@ -9,10 +9,7 @@ export default function QuestionsPage() {
   const router = useRouter();
   const { setCoverDescription } = useBook();
   const questions: Question[] = [
-    // Ég vil hugsa þessa spurningu betur.
-    // Skiptir kyn notanda máli fyrir bókalýsinguna?
-    // Ætti þetta frekar að vera í rannsóknarkönnun?
-    // Þetta er delicate spurning, sem getur stuðað mismunandi hópa af mismunandi ástæðum.
+    // Ég vil hugsa þessa spurningu og orða hana vel.
     /*
     {
       id: 1,
@@ -22,14 +19,12 @@ export default function QuestionsPage() {
       options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
       }, 
     */
-
-    // Find a better way to select age?
     {
       id: 2,
-      text: 'Hvaða aldurshópi tilheyrir þú?',
+      text: 'Á hvaða aldri ert þú?', // Þetta má örugglega orða betur.
       key: 'reader-age',
       type: 'single-choice',
-      options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
+      options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'], // Kannski bara 1 text field?
     },
     {
       id: 3,
@@ -46,7 +41,7 @@ export default function QuestionsPage() {
         'Vísindasögur 🔬',
         'Draugasögur 👻',
         'Spennusögur 🎯',
-        'Vináttu- og fjölskyldusögur 💝',
+        'Vináttu- og ástarsögur 💝',
         'Goðsögur og þjóðsögur 🌈',
       ],
       allowTextInput: true,
