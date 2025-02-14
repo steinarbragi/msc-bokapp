@@ -18,11 +18,11 @@ A web application that uses artificial intelligence for personalized children's 
 ## Key Features
 
 - [x] Custom child-friendly survey UI
-- [ ] AI assisted question personalization
-- [ ] User response analysis for personalized recommendations
+- [ ] AI assisted question personalization [WIP]
+- [x] User response analysis for personalized recommendations
 - [x] Semantic search capabilities for book matching
 - [ ] Performance optimization through Redis caching
-- [ ] Anonymous data collection for research purposes
+- [ ] Anonymous data collection for research purposes [WIP]
 
 This project is being developed as part of a master's thesis to explore how AI can assist children in finding appropriate reading material.
 
