@@ -60,9 +60,9 @@ export default function Home() {
         </div>
 
         <p className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
-          Fyrir börn á aldrinum 6-11 ára. Gögnum er safnað fyrir
-          rannsóknarverkefni í Háskóla Íslands. Öll gögn eru nafnlaus og
-          meðhöndluð á öruggan hátt.
+          Fyrir börn á aldrinum 6-11 ára. Vefurinn er enn í þróun og við erum
+          ekki að safna neinum gögnum eins og er. Þetta er rannsóknarverkefni í
+          Háskóla Íslands.
         </p>
       </div>
     </main>
