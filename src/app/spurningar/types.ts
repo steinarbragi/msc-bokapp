@@ -1,7 +1,10 @@
+type QuestionType = 'text' | 'multiple-choice' | 'slider' | 'single-choice';
+
 export interface Question {
   id: number;
   text: string;
-  type: 'multiple-choice' | 'slider' | 'text' | 'single-choice';
+  type: QuestionType;
+  key: string;
   options?: string[];
   allowTextInput?: boolean;
 }

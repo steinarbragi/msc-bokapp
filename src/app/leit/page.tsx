@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
+import { Loader } from 'lucide-react';
 import Link from 'next/link';
 
 interface BookMetadata {
@@ -25,11 +26,6 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (results.length > 0) {
-      console.log('Search results:', results);
-    }
-  }, [results]);
   const handleSearch = async () => {
     if (!query) return;
 
@@ -45,13 +41,6 @@ export default function SearchPage() {
         },
         body: JSON.stringify({ text: query }),
       });
-
-      // Log the response details
-      console.log('Response status:', embedResponse.status);
-      console.log(
-        'Response headers:',
-        Object.fromEntries(embedResponse.headers.entries())
-      );
 
       // If not OK, log the raw response text for debugging
       if (!embedResponse.ok) {
@@ -133,7 +122,7 @@ export default function SearchPage() {
             disabled={isLoading}
             className='h-14 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg disabled:from-gray-400 disabled:to-gray-500'
           >
-            {isLoading ? 'Leita...' : 'Leita'}
+            {isLoading ? <Loader className='animate-spin' /> : 'Leita'}
           </button>
         </div>
 

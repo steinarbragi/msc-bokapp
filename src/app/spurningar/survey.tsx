@@ -12,7 +12,7 @@ import Link from 'next/link';
 
 interface SurveyProps {
   questions: Question[];
-  onComplete?: (answers: Record<number, string | string[]>) => void;
+  onComplete?: (answers: Record<string, string | string[]>) => void;
   submitButtonText?: string;
 }
 
@@ -45,12 +45,12 @@ export default function Survey({
   const onSubmit = (data: FormValues) => {
     if (onComplete) {
       const transformedAnswers = Object.entries(data).reduce(
-        (acc, [key, value]) => {
-          const id = parseInt(key.replace('question', ''));
-          acc[id] = value;
+        (acc, [, value], index) => {
+          const questionKey = questions[index].key;
+          acc[questionKey] = value;
           return acc;
         },
-        {} as Record<number, string | string[]>
+        {} as Record<string, string | string[]>
       );
 
       onComplete(transformedAnswers);
@@ -115,12 +115,13 @@ export default function Survey({
               question={currentQuestion}
               control={control}
               onNextStep={handleNextStep}
+              name={currentQuestion.key}
             />
 
             <NavigationButtons
               isLastQuestion={isLastQuestion}
               isComplete={isComplete}
-              currentAnswer={answers[`question${currentQuestion.id}`]}
+              currentAnswer={watch(`question${currentQuestion.id}`)}
               onNextStep={handleNextStep}
               submitButtonText={submitButtonText}
             />

@@ -2,16 +2,7 @@
 
 import Survey from './survey';
 import { useRouter } from 'next/navigation';
-
-type QuestionType = 'text' | 'multiple-choice' | 'slider' | 'single-choice';
-
-interface Question {
-  id: number;
-  text: string;
-  type: QuestionType;
-  options: string[];
-  allowTextInput?: boolean;
-}
+import { Question } from './types';
 
 export default function QuestionsPage() {
   const router = useRouter();
@@ -19,12 +10,14 @@ export default function QuestionsPage() {
     {
       id: 1,
       text: 'Hvað lýsir þér best?',
+      key: 'reader-gender',
       type: 'single-choice',
       options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
     },
     {
       id: 2,
       text: 'Hvaða aldurshópi tilheyrir þú?',
+      key: 'reader-age',
       type: 'single-choice',
       options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'],
     },
@@ -32,6 +25,7 @@ export default function QuestionsPage() {
     {
       id: 3,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
+      key: 'reader-favorite-genre',
       type: 'multiple-choice',
       options: [
         'Ævintýri 🤠',
@@ -51,6 +45,7 @@ export default function QuestionsPage() {
     {
       id: 4,
       text: 'Hvernig ætti aðalpersónan að vera?',
+      key: 'main-character-traits',
       type: 'multiple-choice',
       options: [
         'Hugrökk 🦁',
@@ -67,6 +62,7 @@ export default function QuestionsPage() {
     {
       id: 5,
       text: 'Hvað viltu að gerist í sögunni?',
+      key: 'story-plot',
       type: 'multiple-choice',
       options: [
         'Leysa dularfullt mál 🔍',
@@ -86,6 +82,7 @@ export default function QuestionsPage() {
     {
       id: 6,
       text: 'Hvar á sagan að gerast?',
+      key: 'story-location',
       type: 'multiple-choice',
       options: [
         'Í töfraheimi 🌟',
@@ -114,7 +111,19 @@ export default function QuestionsPage() {
       submitButtonText='Finna bækur 🚀'
       onComplete={answers => {
         console.log('Survey answers:', answers);
-        router.push('/leit');
+        fetch('/api/prompt', {
+          method: 'POST',
+          body: JSON.stringify({ surveyResponses: answers }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Prompt response:', data);
+            router.push('/leit');
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            router.push('/leit');
+          });
       }}
     />
   );

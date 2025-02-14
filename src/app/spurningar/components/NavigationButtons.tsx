@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 interface NavigationButtonsProps {
   isLastQuestion: boolean;
   isComplete: boolean;
-  currentAnswer: string | string[];
+  currentAnswer: unknown;
   onNextStep: () => void;
   submitButtonText: string;
 }
@@ -15,18 +15,15 @@ export function NavigationButtons({
   onNextStep,
   submitButtonText,
 }: NavigationButtonsProps) {
-  const shouldShowSkip =
-    !isLastQuestion &&
-    !isComplete &&
-    (!currentAnswer ||
-      (Array.isArray(currentAnswer) && currentAnswer.length === 0) ||
-      currentAnswer === '');
-  const shouldShowNext =
-    !isLastQuestion &&
-    !isComplete &&
-    currentAnswer &&
-    (!Array.isArray(currentAnswer) || currentAnswer.length > 0) &&
-    currentAnswer !== '';
+  const hasAnswer =
+    typeof currentAnswer === 'string'
+      ? currentAnswer !== ''
+      : Array.isArray(currentAnswer)
+        ? currentAnswer.length > 0
+        : currentAnswer != null;
+
+  const shouldShowNext = !isLastQuestion && !isComplete && hasAnswer;
+  const shouldShowSkip = !isLastQuestion && !isComplete && !hasAnswer;
 
   return (
     <>
