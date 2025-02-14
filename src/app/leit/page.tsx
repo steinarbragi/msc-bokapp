@@ -96,10 +96,16 @@ export default function SearchPage() {
 
   return (
     <div className='mx-auto max-w-4xl'>
-      <h1 className='mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
-        Bókaleit
-      </h1>
-
+      <div className='mb-2 flex items-center justify-between'>
+        <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
+          Bókaleit
+        </h1>
+        <Link href='/'>
+          <button className='mb-4 rounded-xl border-2 border-purple-300 bg-purple-50 px-4 py-2 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'>
+            Aftur á forsíðu
+          </button>
+        </Link>
+      </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
         <h2 className='mb-4 text-lg font-semibold text-purple-800'>
           Athugið, textinn er bara sýnishorn og er ekki byggður á þínum svörum

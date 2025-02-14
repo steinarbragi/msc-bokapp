@@ -9,6 +9,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { StepButtons } from './components/StepButtons';
 import { QuestionContent } from './components/QuestionContent';
 import { NavigationButtons } from './components/NavigationButtons';
+import Link from 'next/link';
 
 interface SurveyProps {
   questions: Question[];
@@ -77,12 +78,20 @@ export default function Survey({
       className='mx-auto max-w-2xl'
     >
       <ProgressBar currentStep={currentStep} totalSteps={questions.length} />
-      <StepButtons
-        questions={questions}
-        currentStep={currentStep}
-        answers={answers}
-        onStepClick={setCurrentStep}
-      />
+      <div className='mb-8 flex items-center justify-between'>
+        <StepButtons
+          questions={questions}
+          currentStep={currentStep}
+          answers={answers}
+          onStepClick={setCurrentStep}
+        />
+
+        <Link href='/'>
+          <button className='rounded-xl border-2 border-purple-300 bg-purple-50 px-4 py-2 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'>
+            Aftur á forsíðu
+          </button>
+        </Link>
+      </div>
 
       <AnimatePresence mode='wait'>
         <motion.div

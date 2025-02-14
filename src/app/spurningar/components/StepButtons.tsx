@@ -22,7 +22,7 @@ export function StepButtons({
   };
 
   return (
-    <div className='mb-6 flex flex-wrap gap-2'>
+    <div className='flex flex-wrap gap-2'>
       {questions.map((question, index) => (
         <button
           key={index}
