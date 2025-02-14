@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { BookProvider } from './context/BookContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,9 +28,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 px-3 py-20 font-[family-name:var(--font-geist-sans)] sm:p-20'>
-          {children}
-        </div>
+        <BookProvider>
+          <div className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 px-3 py-20 font-[family-name:var(--font-geist-sans)] sm:p-20'>
+            {children}
+          </div>
+        </BookProvider>
       </body>
     </html>
   );

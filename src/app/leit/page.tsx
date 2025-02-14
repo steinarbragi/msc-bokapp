@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
+import { useBook } from '../context/BookContext';
 
 interface BookMetadata {
   title: string;
@@ -19,9 +20,8 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState(
-    '"Leyndardómur Norðurljósanna" er spennandi ævintýri um 11 ára gamla stelpu sem heitir Sóley. Hún býr í litlu sjávarþorpi á Íslandi með fjölskyldu sinni og gæludýrinu sínu, mörgæs sem heitir Frosti (sem kom óvænt til þorpsins einn daginn og vildi hvergi annars staðar vera en hjá Sóleyju). Eitt kvöld þegar norðurljósin dansa á himninum uppgötvar Sóley að Frosti getur talað! Hann segir henni frá göldrum norðurljósanna og að eitthvað sé að gerast sem gæti haft áhrif á öll dýr heimsins. Saman leggja þau út í ótrúlegt ferðalag þar sem þau hitta töfrandi verur úr íslenskri þjóðtrú, sigla yfir töfrahaf á ísjaka, og læra um mikilvægi þess að vernda náttúruna og allar lifandi verur. Bókin er ríkulega myndskreytt með litríkum teikningum af íslensku landslagi, töfraverum og auðvitað yndislegu vinunum Sóleyju og Frosta.'
-  );
+  const { coverDescription } = useBook();
+  const [query, setQuery] = useState(coverDescription);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,19 +96,6 @@ export default function SearchPage() {
         </Link>
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
-        <h2 className='mb-4 text-lg font-semibold text-purple-800'>
-          Athugið, textinn er bara sýnishorn og er ekki byggður á þínum svörum
-          eins og er.
-        </h2>
-        <div className='mb-8 rounded-lg bg-purple-50 p-4 text-sm text-purple-700'>
-          <p>
-            Þessi hluti er enn í vinnslu. Við munum nota svörin úr könnuninni
-            til að útbúa bókalýsingu. Hún verður borin saman við lýsingar í
-            bókagrunninum okkar til að finna viðeigandi bækur. Þangað til getur
-            þú prófað að skrifa lýsingu á þinni draumabók. Hér er sýnishorn.
-          </p>
-        </div>
-
         <div className='mb-8 flex flex-col content-center items-center gap-4 sm:flex-row'>
           <textarea
             value={query}

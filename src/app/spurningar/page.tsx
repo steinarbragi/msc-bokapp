@@ -3,9 +3,11 @@
 import Survey from './survey';
 import { useRouter } from 'next/navigation';
 import { Question } from './types';
+import { useBook } from '../context/BookContext';
 
 export default function QuestionsPage() {
   const router = useRouter();
+  const { setCoverDescription } = useBook();
   const questions: Question[] = [
     {
       id: 1,
@@ -118,6 +120,7 @@ export default function QuestionsPage() {
           .then(response => response.json())
           .then(data => {
             console.log('Prompt response:', data);
+            setCoverDescription(data.coverDescription);
             router.push('/leit');
           })
           .catch(error => {
