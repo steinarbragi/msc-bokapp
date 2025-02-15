@@ -65,6 +65,13 @@ export default function SurveyPage() {
     },
     {
       id: 7,
+      text: 'Hvað lýsir þér best?',
+      key: 'reader-gender',
+      type: 'single-choice',
+      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
+    },
+    {
+      id: 8,
       text: 'Hvað lestu margar bækur?',
       type: 'single-choice',
       key: 'read-books',
@@ -76,14 +83,15 @@ export default function SurveyPage() {
         'Meira en 5 bækur á mánuði',
       ],
     },
+
     {
-      id: 8,
+      id: 9,
       text: 'Hvað fannst þér skemmtilegast við þessa vefsíðu?',
       type: 'text',
       key: 'most-enjoyed-part',
     },
     {
-      id: 9,
+      id: 10,
       text: 'Hvað myndi gera vefsíðuna betri?',
       type: 'text',
       key: 'improve-website',

@@ -18,13 +18,6 @@ export default function QuestionsPage() {
     },
     {
       id: 2,
-      text: 'Hvað lýsir þér best?', // Ég vil hugsa þessa spurningu og orða hana vel.
-      key: 'reader-gender',
-      type: 'single-choice',
-      options: ['Stelpa 👧', 'Strákur 👦', 'Stálp 👱', 'Annað 🦸'],
-    },
-    {
-      id: 3,
       text: 'Hvaða tegund af sögum finnst þér skemmtilegast að lesa?',
       key: 'reader-favorite-genre',
       type: 'multiple-choice',
@@ -44,7 +37,7 @@ export default function QuestionsPage() {
       allowTextInput: true,
     },
     {
-      id: 4,
+      id: 3,
       text: 'Hvernig ætti aðalpersónan að vera?',
       key: 'main-character-traits',
       type: 'multiple-choice',
@@ -61,7 +54,7 @@ export default function QuestionsPage() {
       allowTextInput: true,
     },
     {
-      id: 5,
+      id: 4,
       text: 'Hvað viltu að gerist í sögunni?',
       key: 'story-plot',
       type: 'multiple-choice',
@@ -81,7 +74,7 @@ export default function QuestionsPage() {
       allowTextInput: true,
     },
     {
-      id: 6,
+      id: 5,
       text: 'Hvar á sagan að gerast?',
       key: 'story-location',
       type: 'multiple-choice',
