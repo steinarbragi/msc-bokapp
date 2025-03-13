@@ -44,7 +44,7 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
                     },
                     id: {
                       type: 'string',
-                      description: 'Einkvæmur lykill fyrir spurninguna',
+                      description: 'unique identifier for the question',
                     },
                     type: {
                       type: 'string',
@@ -130,50 +130,10 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
         }
       } catch (parseError) {
         console.error('Error parsing text response:', parseError);
-        // Use fallback questions
-        questions = [
-          {
-            id: 'fallback1',
-            text: 'Hvaða tegund af sögu myndir þú vilja lesa?',
-            type: 'single-choice',
-            options: [
-              'Ævintýri',
-              'Spennusaga',
-              'Rómantík',
-              'Vísindaskáldskapur',
-              'Fantasía',
-            ],
-            allowTextInput: false,
-          },
-          {
-            id: 'fallback2',
-            text: 'Hversu löng ætti sagan að vera?',
-            type: 'single-choice',
-            options: [
-              'Stutt saga (undir 10 mínútur)',
-              'Miðlungs (10-20 mínútur)',
-              'Löng saga (yfir 20 mínútur)',
-            ],
-            allowTextInput: false,
-          },
-          {
-            id: 'fallback3',
-            text: 'Hvað er mikilvægast í góðri sögu að þínu mati?',
-            type: 'multiple-choice',
-            options: [
-              'Áhugaverðir persónuleikar',
-              'Spennandi söguþráður',
-              'Góður endi',
-              'Óvæntar vendingar',
-              'Falleg lýsing á umhverfi',
-            ],
-            allowTextInput: true,
-          },
-        ];
       }
     }
 
-    // If we still don't have questions, use fallbacks
+    // If we don't have valid questions, use fallbacks
     if (!questions || questions.length === 0) {
       console.log('No questions found, using fallbacks');
       questions = [

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { Question, FormValues } from './types';
@@ -407,7 +407,7 @@ export default function Survey({
   }, [isLoadingMore]);
 
   // Add a debug function to log the current state
-  const logState = () => {
+  const logState = useCallback(() => {
     console.group('Current Survey State');
     console.log('Questions:', questions);
     console.log('Current Step:', currentStep);
@@ -421,7 +421,19 @@ export default function Survey({
     console.log('Is Complete:', isComplete);
     console.log('Current Question: ', currentQuestion?.text || 'None');
     console.groupEnd();
-  };
+  }, [
+    questions,
+    currentStep,
+    safeCurrentStep,
+    isLastQuestion,
+    isLastInitialQuestion,
+    hasGeneratedQuestions,
+    isLoadingMore,
+    isLoading,
+    answers,
+    isComplete,
+    currentQuestion?.text,
+  ]);
 
   // Call the debug function when relevant state changes
   useEffect(() => {
@@ -434,6 +446,7 @@ export default function Survey({
     hasGeneratedQuestions,
     isLoadingMore,
     isLoading,
+    logState,
   ]);
 
   // Add an effect to log when questions are updated
