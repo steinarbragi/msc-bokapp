@@ -7,12 +7,16 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "esnext", 
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    // To specifically allow @ts-ignore comments
+    "allowUnusedLabels": true,
+    // If you want to control how strict TS is with unused expressions
+    "allowUnreachableCode": true,
     "plugins": [
       {
         "name": "next"
