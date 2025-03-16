@@ -25,6 +25,7 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [readBooks, setReadBooks] = useState<Set<string>>(new Set());
 
   const handleSearch = useCallback(async () => {
     if (!query) return;
@@ -61,7 +62,7 @@ export default function SearchPage() {
         },
         body: JSON.stringify({
           vector: embedding,
-          topK: 10,
+          topK: 50,
         }),
       });
 
@@ -82,6 +83,19 @@ export default function SearchPage() {
       setIsLoading(false);
     }
   }, [query]);
+
+  const toggleReadStatus = (bookId: string) => {
+    setReadBooks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookId)) {
+        newSet.delete(bookId);
+      } else {
+        newSet.add(bookId);
+      }
+      return newSet;
+    });
+  };
+
   useEffect(() => {
     if (coverDescription) {
       handleSearch();
@@ -143,43 +157,78 @@ export default function SearchPage() {
             Leita að bókum...
           </div>
         ) : (
-          <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-            {results.map((book, index) => (
-              <div
-                key={index}
-                className='transform rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl'
-              >
-                {book.metadata.image_url && (
-                  <Image
-                    src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
-                    alt={book.metadata.title}
-                    width={200}
-                    height={320}
-                    className='mb-4 h-80 w-full rounded-lg object-cover'
-                  />
-                )}
-                <h2 className='mb-2 text-xl font-semibold text-purple-800'>
-                  {book.metadata.title}
-                </h2>
-                <p className='mb-4 line-clamp-3 text-gray-600'>
-                  {book.metadata.description}
-                </p>
-                <p className='pb-5 text-xs text-gray-500'>
-                  Score: {book.score}
-                </p>
-                <a
-                  href={book.metadata.url}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-white transition-all hover:scale-105'
+          <div>
+            <div className='mb-4 text-sm text-gray-600'>
+              Hefurðu lesið einhverjar af þessum bókum?
+            </div>
+            <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+              {results.map((book, index) => (
+                <div
+                  key={index}
+                  className={`transform rounded-xl border-2 ${
+                    readBooks.has(book.id)
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-purple-100 bg-white'
+                  } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl`}
                 >
-                  Skoða nánar
-                </a>
-              </div>
-            ))}
+                  {book.metadata.image_url && (
+                    <Image
+                      src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
+                      alt={book.metadata.title}
+                      width={200}
+                      height={320}
+                      className='mb-4 h-80 w-full rounded-lg object-cover'
+                    />
+                  )}
+                  <h2 className='mb-2 text-xl font-semibold text-purple-800'>
+                    {book.metadata.title}
+                  </h2>
+                  <p className='mb-4 line-clamp-3 text-gray-600'>
+                    {book.metadata.description}
+                  </p>
+                  <p className='pb-5 text-xs text-gray-500'>
+                    Score: {book.score}
+                  </p>
+                  <div className='mb-4 flex items-center justify-between'>
+                    <a
+                      href={book.metadata.url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-white transition-all hover:scale-105'
+                    >
+                      Skoða nánar
+                    </a>
+                    <button
+                      onClick={() => toggleReadStatus(book.id)}
+                      className={`rounded-lg px-4 py-2 transition-all ${
+                        readBooks.has(book.id)
+                          ? 'bg-green-500 text-white hover:bg-green-600'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {readBooks.has(book.id) ? 'Lesin ✓' : 'Merkja sem lesna'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
+      {results.length > 0 && readBooks.size > 0 && (
+        <button
+          onClick={() => {
+            // TODO: Implement submission of read books
+            console.log('Submitting read books:', Array.from(readBooks));
+          }}
+          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full bg-green-500 px-6 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-green-600'
+        >
+          <span>Vista lesnar bækur</span>
+          <span className='flex h-6 w-6 items-center justify-center rounded-full bg-white text-sm text-green-500'>
+            {readBooks.size}
+          </span>
+        </button>
+      )}
     </div>
   );
 }
