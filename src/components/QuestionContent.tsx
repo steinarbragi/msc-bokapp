@@ -1,5 +1,5 @@
 import { Control } from 'react-hook-form';
-import { Question, FormValues } from '../types';
+import { Question, FormValues } from '../app/spurningar/types';
 import { MultipleChoiceQuestion } from './question-types/MultipleChoiceQuestion';
 import { SingleChoiceQuestion } from './question-types/SingleChoiceQuestion';
 import { TextQuestion } from './question-types/TextQuestion';

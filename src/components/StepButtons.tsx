@@ -1,4 +1,4 @@
-import { Question } from '../types';
+import { Question } from '../app/spurningar/types';
 
 interface StepButtonsProps {
   questions: Question[];

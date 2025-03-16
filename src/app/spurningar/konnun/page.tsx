@@ -1,6 +1,6 @@
 'use client';
 
-import Survey from '../survey';
+import Survey from './survey';
 import { useRouter } from 'next/navigation';
 import { Question } from '../types';
 export default function SurveyPage() {

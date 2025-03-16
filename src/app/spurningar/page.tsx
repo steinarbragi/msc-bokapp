@@ -1,9 +1,9 @@
 'use client';
 
-import Survey from './survey';
 import { useRouter } from 'next/navigation';
 import { Question } from './types';
 import { useBook } from '../context/BookContext';
+import Questions from './questions';
 
 export default function QuestionsPage() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function QuestionsPage() {
   ];
 
   return (
-    <Survey
+    <Questions
       questions={questions}
       submitButtonText='Finna bækur 🚀'
       onComplete={answers => {

@@ -1,5 +1,5 @@
 import { Control, Controller } from 'react-hook-form';
-import { Question, FormValues } from '../../types';
+import { Question, FormValues } from '../../app/spurningar/types';
 
 interface TextQuestionProps {
   question: Question;

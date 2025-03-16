@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Control, Controller } from 'react-hook-form';
-import { Question, FormValues } from '../../types';
+import { Question, FormValues } from '../../app/spurningar/types';
 
 interface SingleChoiceQuestionProps {
   question: Question;
