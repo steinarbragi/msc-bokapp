@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Question } from './types';
 import { useBook } from '../context/BookContext';
-import Questions from './questions';
+import Survey from './konnun/survey';
 
 export default function QuestionsPage() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function QuestionsPage() {
   ];
 
   return (
-    <Questions
+    <Survey
       questions={questions}
       submitButtonText='Finna bækur 🚀'
       onComplete={answers => {

@@ -54,7 +54,6 @@ export default function Questions({
 
     if (onComplete) {
       if (Object.keys(data).length < questions.length) {
-        alert('Please answer all questions before submitting.');
         return;
       }
 
@@ -172,7 +171,7 @@ export default function Questions({
           setHasGeneratedQuestions(true);
           setQuestions(prev => [...prev, ...fallbackQuestions]);
           setIsLoadingMore(false);
-          alert('Using default follow-up questions. Click OK to continue.');
+          setCurrentStep(initialQuestions.length);
           return;
         }
 
@@ -188,27 +187,15 @@ export default function Questions({
         setHasGeneratedQuestions(true);
         setQuestions(prev => [...prev, ...newQuestions]);
         setIsLoadingMore(false);
-
-        setTimeout(() => {
-          alert(
-            `${newQuestions.length} new questions have been added! Click OK to continue.`
-          );
-          if (confirm('Would you like to go to the first new question now?')) {
-            setCurrentStep(initialQuestions.length);
-          }
-        }, 300);
+        setCurrentStep(initialQuestions.length);
       } else {
         setHasGeneratedQuestions(true);
         setIsLoadingMore(false);
-        alert(
-          'No questions were generated. Proceeding with current questions.'
-        );
       }
     } catch (error) {
       setHasGeneratedQuestions(true);
       setIsLoadingMore(false);
       console.error('Error generating questions:', error);
-      alert('Error generating questions. Proceeding with current questions.');
     }
   };
 
@@ -218,9 +205,6 @@ export default function Questions({
       timeoutId = setTimeout(() => {
         setIsLoadingMore(false);
         setHasGeneratedQuestions(true);
-        alert(
-          'Question generation timed out. Please try again or proceed with current questions.'
-        );
       }, 15000);
     }
     return () => {
