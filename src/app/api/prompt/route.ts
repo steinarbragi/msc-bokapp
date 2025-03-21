@@ -18,7 +18,8 @@ export async function POST(request: Request) {
           role: 'user',
           content: `Generate a book back cover description in Icelandic. 
             Only return the text for the back cover. 
-            Do not include any other text. 
+            Do not include any other text.
+            Do not include character names. 
             It's for a reader with these preferences:
             Gender: ${surveyResponses['reader-gender']}
             Age: ${surveyResponses['reader-age']}
