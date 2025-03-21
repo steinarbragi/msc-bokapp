@@ -1,7 +1,7 @@
-import { OpenAI } from 'openai';
+import { Pinecone } from '@pinecone-database/pinecone';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY!,
 });
 
 export async function POST(request: Request) {
@@ -11,15 +11,27 @@ export async function POST(request: Request) {
     if (!text) {
       return new Response('Missing text parameter', { status: 400 });
     }
+    // Get embeddings using Pinecone's hosted E5 large model
+    const response = await pinecone.inference.embed(
+      'multilingual-e5-large',
+      [text],
+      { inputType: 'query' }
+    );
 
-    // Get embeddings from OpenAI
-    const response = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
-      input: text,
-    });
+    // Add detailed logging
+    console.log('Raw embedding response:', JSON.stringify(response, null, 2));
+    console.log('Response type:', typeof response);
+    console.log('Values type:', typeof response?.data?.[0]?.values);
+    console.log('Values:', response?.data?.[0]?.values);
 
-    // Return the first embedding (there will only be one since we sent one text)
-    return new Response(JSON.stringify(response.data[0].embedding), {
+    if (!response?.data?.[0]?.values) {
+      throw new Error('Invalid embedding response structure');
+    }
+
+    const vector = response.data[0].values;
+
+    // Return the vector directly
+    return new Response(JSON.stringify({ vector }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {

@@ -47,7 +47,6 @@ export default function SearchPage() {
         body: JSON.stringify({ text: query }),
       });
 
-      // If not OK, log the raw response text for debugging
       if (!embedResponse.ok) {
         const rawText = await embedResponse.text();
         console.error('Raw error response:', rawText);
@@ -56,7 +55,17 @@ export default function SearchPage() {
         );
       }
 
-      const embedding = await embedResponse.json();
+      const { vector } = await embedResponse.json();
+      
+      // Add logging to debug the vector
+      console.log('Vector type:', typeof vector);
+      console.log('Vector length:', vector.length);
+      console.log('First few values:', vector.slice(0, 5));
+
+      console.log(
+        'Sending to search:',
+        JSON.stringify({ vector, topK: 50 }, null, 2)
+      );
 
       // Then search Pinecone with the embedding
       const searchResponse = await fetch('/api/search', {
@@ -65,13 +74,15 @@ export default function SearchPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          vector: embedding,
+          vector,
           topK: 50,
         }),
       });
 
       if (!searchResponse.ok) {
-        throw new Error('Search failed');
+        const errorText = await searchResponse.text();
+        console.error('Search error response:', errorText);
+        throw new Error(`Search failed: ${errorText}`);
       }
 
       const searchResults = await searchResponse.json();

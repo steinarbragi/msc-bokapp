@@ -5,6 +5,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+export const maxDuration = 150;
+
 type Book = {
   metadata: {
     title: string;
