@@ -18,12 +18,6 @@ export async function POST(request: Request) {
       { inputType: 'query' }
     );
 
-    // Add detailed logging
-    console.log('Raw embedding response:', JSON.stringify(response, null, 2));
-    console.log('Response type:', typeof response);
-    console.log('Values type:', typeof response?.data?.[0]?.values);
-    console.log('Values:', response?.data?.[0]?.values);
-
     if (!response?.data?.[0]?.values) {
       throw new Error('Invalid embedding response structure');
     }
