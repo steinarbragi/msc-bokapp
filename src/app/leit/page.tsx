@@ -21,7 +21,6 @@ interface SearchResult {
 
 export default function SearchPage() {
   const { coverDescription } = useBook();
-  const [query, setQuery] = useState(coverDescription);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +31,7 @@ export default function SearchPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSearch = useCallback(async () => {
-    if (!query) return;
+    if (!coverDescription) return;
 
     setIsLoading(true);
     setError(null); // Clear any previous errors
@@ -44,7 +43,7 @@ export default function SearchPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: query }),
+        body: JSON.stringify({ text: coverDescription }),
       });
 
       if (!embedResponse.ok) {
@@ -56,7 +55,7 @@ export default function SearchPage() {
       }
 
       const { vector } = await embedResponse.json();
-      
+
       // Add logging to debug the vector
       console.log('Vector type:', typeof vector);
       console.log('Vector length:', vector.length);
@@ -97,7 +96,7 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [query]);
+  }, [coverDescription]);
 
   const toggleReadStatus = (bookId: string) => {
     setReadBooks(prev => {
@@ -160,37 +159,6 @@ export default function SearchPage() {
         </Link>
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
-        <p className='mb-6 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
-          Athugið: Þegar spurningum hefur verið svarað notum við svörin til að
-          útbúa bókalýsingu. Þessi lýsing er notuð til að leita að svipuðum
-          bókum en verður líklega ekki sýnileg í endanlegri útgáfu.
-        </p>
-        <div className='mb-8 flex flex-col content-center items-center gap-4 sm:flex-row'>
-          <textarea
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder='Sláðu inn bókalýsingu...'
-            className='h-24 flex-1 rounded-xl border-2 border-gray-200 p-4 opacity-30 transition-all focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-100'
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          />
-          <button
-            onClick={handleSearch}
-            disabled={isLoading}
-            className='h-14 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-4 text-white transition-all hover:scale-105 hover:shadow-lg disabled:from-gray-400 disabled:to-gray-500'
-          >
-            {isLoading ? <Loader className='animate-spin' /> : 'Leita'}
-          </button>
-        </div>
-
-        <div className='flex justify-center'>
-          <Link
-            href='/spurningar/konnun'
-            className='mb-8 inline-block rounded-xl border-2 border-purple-300 bg-purple-50 px-8 py-4 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'
-          >
-            Svara stuttri könnun um vefsíðuna
-          </Link>
-        </div>
-
         {error && (
           <div className='mb-4 rounded-lg bg-red-100 p-4 text-red-700'>
             Villa kom upp: {error}
@@ -201,17 +169,22 @@ export default function SearchPage() {
           <div className='text-center text-lg text-gray-600'>
             Leita að bókum...
           </div>
+        ) : isProcessing ? (
+          <div className='flex justify-center'>
+            <Loader className='h-8 w-8 animate-spin text-purple-600' />
+          </div>
         ) : (
           <>
             {results.length > 0 && recommendations.length === 0 && (
               <div>
-                <div className='mb-4 text-sm text-gray-600'>
+                <h2 className='mb-4 text-2xl font-semibold text-gray-600'>
                   Hefurðu lesið einhverjar af þessum bókum?
-                </div>
+                </h2>
                 <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
                   {results.map((book, index) => (
                     <div
                       key={index}
+                      onClick={() => toggleReadStatus(book.id)}
                       className={`transform rounded-xl border-2 ${
                         readBooks.has(book.id)
                           ? 'border-green-200 bg-green-50'
@@ -233,30 +206,28 @@ export default function SearchPage() {
                       <p className='mb-4 line-clamp-3 text-gray-600'>
                         {book.metadata.description}
                       </p>
-                      <p className='pb-5 text-xs text-gray-500'>
-                        Score: {book.score}
-                      </p>
-                      <div className='mb-4 flex items-center justify-between'>
-                        <a
+                      <button
+                        onClick={() => toggleReadStatus(book.id)}
+                        className={`w-full rounded-lg px-4 py-3 text-lg font-medium transition-all ${
+                          readBooks.has(book.id)
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                        }`}
+                      >
+                        {readBooks.has(book.id)
+                          ? 'Lesin ✓'
+                          : 'Merkja sem lesna'}
+                      </button>
+                      <div className='pt-4'>
+                        <Link
                           href={book.metadata.url}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className='inline-block rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-white transition-all hover:scale-105'
+                          className='text-center text-xs text-blue-500'
+                          onClick={e => e.stopPropagation()}
                         >
-                          Skoða nánar
-                        </a>
-                        <button
-                          onClick={() => toggleReadStatus(book.id)}
-                          className={`rounded-lg px-4 py-2 transition-all ${
-                            readBooks.has(book.id)
-                              ? 'bg-green-500 text-white hover:bg-green-600'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                        >
-                          {readBooks.has(book.id)
-                            ? 'Lesin ✓'
-                            : 'Merkja sem lesna'}
-                        </button>
+                          Skoða hjá Forlaginu
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -277,32 +248,39 @@ export default function SearchPage() {
                     Sýna allar bækur
                   </button>
                 </div>
-                <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+                <div className='space-y-6'>
                   {recommendations.map((book, index) => (
                     <div
                       key={index}
-                      className='transform rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl'
+                      className='flex transform gap-6 rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl'
                     >
-                      {book.metadata.image_url && (
-                        <Image
-                          src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
-                          alt={book.metadata.title}
-                          width={200}
-                          height={320}
-                          className='mb-4 h-80 w-full rounded-lg object-cover'
-                        />
-                      )}
-                      <h2 className='mb-2 text-xl font-semibold text-purple-800'>
-                        {book.metadata.title}
-                      </h2>
-                      <p className='mb-4 line-clamp-3 text-gray-600'>
-                        {book.metadata.description}
-                      </p>
-                      <p className='pb-5 text-xs text-gray-500'>
-                        Score: {book.score}
-                      </p>
-                      <div className='mt-4 rounded-lg bg-purple-50 p-3 text-sm text-purple-700'>
-                        {book.reasoning}
+                      <div className='w-48 flex-shrink-0'>
+                        {book.metadata.image_url && (
+                          <Image
+                            src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
+                            alt={book.metadata.title}
+                            width={200}
+                            height={320}
+                            className='h-64 w-full rounded-lg object-cover'
+                          />
+                        )}
+                      </div>
+                      <div className='flex-grow'>
+                        <h2 className='mb-2 text-xl font-semibold text-purple-800'>
+                          {book.metadata.title}
+                        </h2>
+                        <p className='mb-4 line-clamp-3 text-gray-600'>
+                          {book.metadata.description}
+                        </p>
+
+                        {book.reasoning && (
+                          <div className='mt-4 rounded-lg bg-purple-50 p-3 text-sm text-purple-700'>
+                            <p className='text-xs text-gray-500'>
+                              Hvað segir bókavélin?
+                            </p>
+                            {book.reasoning}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
