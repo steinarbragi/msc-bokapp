@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { Question, FormValues } from './types';
@@ -10,6 +10,7 @@ import { QuestionContent } from '@/components/QuestionContent';
 import { NavigationButtons } from '@/components/NavigationButtons';
 import Loader from '@/components/loader';
 import Link from 'next/link';
+import { useQuestionContext } from './QuestionContext';
 
 interface SurveyProps {
   questions: Question[];
@@ -20,30 +21,37 @@ interface SurveyProps {
 export default function Questions({
   questions: initialQuestions,
   onComplete,
-  submitButtonText = 'Áfram',
+  submitButtonText = 'Fá bókameðmæli',
 }: SurveyProps) {
-  const [questions, setQuestions] = useState(initialQuestions);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const { control, handleSubmit, watch } = useForm<FormValues>({
+  const {
+    questions,
+    setQuestions,
+    currentStep,
+    setCurrentStep,
+    hasGeneratedQuestions,
+    setHasGeneratedQuestions,
+    isLoadingMore,
+    setIsLoadingMore,
+  } = useQuestionContext();
+
+  const { control, watch } = useForm<FormValues>({
     defaultValues: {},
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [hasGeneratedQuestions, setHasGeneratedQuestions] = useState(false);
 
   const safeCurrentStep = Math.min(currentStep, questions.length - 1);
   const currentQuestion = questions[safeCurrentStep];
   const isLastQuestion = safeCurrentStep === questions.length - 1;
   const isLastInitialQuestion = safeCurrentStep === initialQuestions.length - 1;
 
-  const answers = watch();
-  const hasValidAnswers = Object.keys(answers).every(key => {
-    const answer = answers[key as keyof FormValues];
+  const formAnswers = watch();
+  const hasValidAnswers = Object.keys(formAnswers).every(key => {
+    const answer = formAnswers[key as keyof FormValues];
     return answer && (!Array.isArray(answer) || answer.length > 0);
   });
 
   const hasAnsweredAllQuestions =
-    Object.keys(answers).length === questions.length;
+    Object.keys(formAnswers).length === questions.length;
   const isComplete = hasValidAnswers && hasAnsweredAllQuestions;
 
   const onSubmit = (data: FormValues) => {
@@ -85,11 +93,13 @@ export default function Questions({
     }
 
     if (isLastQuestion && hasGeneratedQuestions && isComplete) {
-      handleSubmit(onSubmit)();
+      const formData = watch();
+      onSubmit(formData);
       return;
     }
 
-    setCurrentStep(prev => prev + 1);
+    const nextStep = Math.min(currentStep + 1, questions.length - 1);
+    setCurrentStep(nextStep);
   };
 
   const generateMoreQuestions = async () => {
@@ -98,7 +108,7 @@ export default function Questions({
     try {
       setIsLoadingMore(true);
 
-      const transformedAnswers = Object.entries(answers).reduce(
+      const transformedAnswers = Object.entries(formAnswers).reduce(
         (acc, [key, value]) => {
           const questionIndex = parseInt(key.replace(/\D/g, ''), 10) - 1;
           if (questionIndex >= 0 && questionIndex < questions.length) {
@@ -139,6 +149,7 @@ export default function Questions({
         );
 
         if (validQuestions.length === 0) {
+          console.log('No valid questions found in response:', data);
           const fallbackQuestions = [
             {
               id: questions.length + 1,
@@ -169,7 +180,7 @@ export default function Questions({
           ] as Question[];
 
           setHasGeneratedQuestions(true);
-          setQuestions(prev => [...prev, ...fallbackQuestions]);
+          setQuestions((prev: Question[]) => [...prev, ...fallbackQuestions]);
           setIsLoadingMore(false);
           setCurrentStep(initialQuestions.length);
           return;
@@ -179,13 +190,13 @@ export default function Questions({
           (q: Question, index: number) => ({
             ...q,
             id: questions.length + index + 1,
-            key: q.id || `question${questions.length + index + 1}`,
+            key: q.key || `question${questions.length + index + 1}`,
             type: q.type || 'single-choice',
           })
         ) as Question[];
 
         setHasGeneratedQuestions(true);
-        setQuestions(prev => [...prev, ...newQuestions]);
+        setQuestions((prev: Question[]) => [...prev, ...newQuestions]);
         setIsLoadingMore(false);
         setCurrentStep(initialQuestions.length);
       } else {
@@ -210,7 +221,7 @@ export default function Questions({
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isLoadingMore]);
+  }, [isLoadingMore, setIsLoadingMore, setHasGeneratedQuestions]);
 
   if (isLoading) {
     return (
@@ -238,44 +249,6 @@ export default function Questions({
       animate={{ opacity: 1 }}
       className='mx-auto max-w-2xl'
     >
-      {isLastInitialQuestion && !hasGeneratedQuestions && (
-        <div className='mb-4 rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4'>
-          <h3 className='font-bold text-yellow-800'>
-            Þú ert að ljúka grunnspurningum
-          </h3>
-          <p className='mb-2 text-sm text-yellow-700'>
-            Viltu fá fleiri spurningar til að sérsníða bókina betur?
-          </p>
-          <button
-            onClick={generateMoreQuestions}
-            className='rounded-lg bg-yellow-500 px-4 py-2 text-white transition-colors hover:bg-yellow-600'
-            disabled={isLoadingMore}
-          >
-            {isLoadingMore ? 'Hleð...' : 'Fá fleiri spurningar'}
-          </button>
-        </div>
-      )}
-
-      {hasGeneratedQuestions &&
-        questions.length > initialQuestions.length &&
-        currentStep < initialQuestions.length && (
-          <div className='mb-4 rounded-lg border-2 border-green-200 bg-green-50 p-4'>
-            <h3 className='font-bold text-green-800'>
-              Nýjar spurningar tilbúnar!
-            </h3>
-            <p className='mb-2 text-sm text-green-700'>
-              {questions.length - initialQuestions.length} nýjar spurningar hafa
-              verið búnar til.
-            </p>
-            <button
-              onClick={() => setCurrentStep(initialQuestions.length)}
-              className='rounded-lg bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600'
-            >
-              Skoða nýjar spurningar
-            </button>
-          </div>
-        )}
-
       <form
         onSubmit={e => {
           e.preventDefault();
@@ -284,7 +257,8 @@ export default function Questions({
             return false;
           }
           if (isComplete) {
-            handleSubmit(onSubmit)(e);
+            const formData = watch();
+            onSubmit(formData);
           } else {
             handleNextStep();
           }
@@ -296,7 +270,7 @@ export default function Questions({
           <StepButtons
             questions={questions}
             currentStep={currentStep}
-            answers={answers}
+            answers={formAnswers}
             onStepClick={setCurrentStep}
           />
 

@@ -10,6 +10,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { surveyResponses } = body;
 
+    // Build preferences string from all survey responses
+    const preferences = Object.entries(surveyResponses)
+      .map(([key, value]) => {
+        // Handle array values by joining with commas
+        const formattedValue = Array.isArray(value) ? value.join(', ') : value;
+        return `${key}: ${formattedValue}`;
+      })
+      .join('\n');
+
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-latest',
       max_tokens: 1000,
@@ -19,13 +28,9 @@ export async function POST(request: Request) {
           content: `Generate a book back cover description in Icelandic. 
             Only return the text for the back cover. 
             Do not include any other text.
-            Do not include character names. 
+            Do not include character names.
             It's for a reader with these preferences:
-            Gender: ${surveyResponses['reader-gender']}
-            Age: ${surveyResponses['reader-age']}
-            Favorite Genres: ${surveyResponses['reader-favorite-genre'].join(', ')}
-            Character Traits: ${surveyResponses['main-character-traits'].join(', ')}
-            Plot Elements: ${surveyResponses['story-plot'].join(', ')}`,
+            ${preferences}`,
         },
       ],
     });

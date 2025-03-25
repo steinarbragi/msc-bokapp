@@ -76,60 +76,23 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
     // Log the response structure for debugging
     console.log('Response content:', JSON.stringify(response.content, null, 2));
 
-    // Extract tool calls from the response
-    const block = response.content[0];
-    if (!block) {
-      throw new Error('Empty response content');
-    }
-
-    console.log('First content block type:', block.type);
-
-    // Handle the response based on its type
+    // Extract questions from the response
     let questions = [];
 
-    // Check if we have a tool_use block
-    if (block.type === 'tool_use') {
-      console.log('Found tool_use block');
-
-      // Try to access input.questions directly
-      // @ts-expect-error - We know this might exist based on the logs and need to bypass type checking since block.input is not typed
-      if (block.input && block.input.questions) {
-        // @ts-expect-error - block.input.questions is not typed but we know it exists at runtime
-        questions = block.input.questions;
-        console.log('Extracted questions from block.input.questions');
-      }
-      // Try to access tool_calls
-      // @ts-expect-error - block.tool_calls is not typed in the Anthropic API types but exists at runtime
-      else if (block.tool_calls && block.tool_calls.length > 0) {
-        // @ts-expect-error - tool_calls array elements are not fully typed but we know they exist
-        const toolCall = block.tool_calls[0];
-        if (toolCall.type === 'function') {
-          try {
-            questions = JSON.parse(toolCall.function.arguments).questions;
-            console.log('Extracted questions from tool_call arguments');
-          } catch (e) {
-            console.error('Error parsing tool_call arguments:', e);
-          }
+    // Look through all blocks to find the tool_use block with questions
+    for (const block of response.content) {
+      if (block.type === 'tool_use') {
+        console.log('Found tool_use block');
+        // @ts-expect-error - block.input is not typed but exists at runtime
+        if (block.input && block.input.questions) {
+          // @ts-expect-error - block.input.questions is not typed but exists at runtime
+          questions = block.input.questions;
+          console.log(
+            'Extracted questions from block.input.questions:',
+            questions
+          );
+          break; // Found questions, no need to look further
         }
-      }
-    }
-    // Try to parse text content
-    else if (block.type === 'text') {
-      try {
-        // Try to parse the text as JSON
-        const textContent = (block as Anthropic.TextBlock).text;
-        console.log('Text content:', textContent);
-
-        // Check if the text contains a JSON object
-        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const jsonStr = jsonMatch[0];
-          const parsed = JSON.parse(jsonStr);
-          questions = parsed.questions || [];
-          console.log('Extracted questions from text content');
-        }
-      } catch (parseError) {
-        console.error('Error parsing text response:', parseError);
       }
     }
 

@@ -15,7 +15,7 @@ CREATE TABLE survey_responses (
 );
 
 -- Table to store generated prompts
-CREATE TABLE generated_prompts (
+CREATE TABLE generated_descriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES survey_sessions(id),
     prompt_text TEXT NOT NULL,
@@ -43,9 +43,21 @@ CREATE TABLE search_feedback (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table to store relationship between survey responses and recommendations
+CREATE TABLE recommendation_context (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES survey_sessions(id),
+    search_result_id UUID REFERENCES search_results(id),
+    response_id UUID REFERENCES survey_responses(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Add indexes for better query performance
 CREATE INDEX idx_survey_responses_session ON survey_responses(session_id);
 CREATE INDEX idx_generated_prompts_session ON generated_prompts(session_id);
 CREATE INDEX idx_search_results_prompt ON search_results(prompt_id);
 CREATE INDEX idx_search_results_session ON search_results(session_id);
-CREATE INDEX idx_search_feedback_result ON search_feedback(search_result_id); 
+CREATE INDEX idx_search_feedback_result ON search_feedback(search_result_id);
+CREATE INDEX idx_recommendation_context_session ON recommendation_context(session_id);
+CREATE INDEX idx_recommendation_context_result ON recommendation_context(search_result_id);
+CREATE INDEX idx_recommendation_context_response ON recommendation_context(response_id); 
