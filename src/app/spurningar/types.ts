@@ -10,5 +10,5 @@ export interface Question {
 }
 
 export type FormValues = {
-  [key: `question${number}`]: string | string[];
+  [key: string]: string | string[];
 };

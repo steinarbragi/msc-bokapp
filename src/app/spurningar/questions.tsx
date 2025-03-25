@@ -61,7 +61,14 @@ export default function Questions({
     }
 
     if (onComplete) {
-      if (Object.keys(data).length < questions.length) {
+      // Only check if answered questions have valid answers
+      const answeredQuestions = Object.keys(data);
+      const hasValidAnsweredQuestions = answeredQuestions.every(key => {
+        const answer = data[key as keyof FormValues];
+        return answer && (!Array.isArray(answer) || answer.length > 0);
+      });
+
+      if (!hasValidAnsweredQuestions && !isComplete && !isLastQuestion) {
         return;
       }
 
@@ -92,7 +99,7 @@ export default function Questions({
       return;
     }
 
-    if (isLastQuestion && hasGeneratedQuestions && isComplete) {
+    if ((isLastQuestion || isComplete) && hasGeneratedQuestions) {
       const formData = watch();
       onSubmit(formData);
       return;
@@ -101,6 +108,12 @@ export default function Questions({
     const nextStep = Math.min(currentStep + 1, questions.length - 1);
     setCurrentStep(nextStep);
   };
+
+  useEffect(() => {
+    console.log('isLastQuestion', isLastQuestion);
+    console.log('hasGeneratedQuestions', hasGeneratedQuestions);
+    console.log('isComplete', isComplete);
+  }, [isLastQuestion, hasGeneratedQuestions, isComplete]);
 
   const generateMoreQuestions = async () => {
     if (isLoadingMore) return;
