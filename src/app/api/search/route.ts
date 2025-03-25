@@ -9,13 +9,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { vector, topK, sessionId, descriptionId } = body;
 
-    console.log('Received search request with:', {
-      hasVector: !!vector,
-      topK,
-      sessionId,
-      descriptionId,
-    });
-
     if (!vector) {
       return NextResponse.json(
         { error: 'Vector is required' },
@@ -39,26 +32,18 @@ export async function POST(request: Request) {
 
     // Get the index
     const index = pinecone.index(process.env.PINECONE_INDEX_NAME!);
-    console.log('Connected to Pinecone index');
 
     // Query the index
-    console.log('Querying Pinecone index...');
     const queryResponse = await index.query({
       vector,
       topK: topK || 10,
       includeMetadata: true,
     });
-    console.log(
-      'Got response from Pinecone with',
-      queryResponse.matches.length,
-      'matches'
-    );
 
     // Store book metadata and search results
     for (let i = 0; i < queryResponse.matches.length; i++) {
       const match = queryResponse.matches[i];
       if (!match.metadata) {
-        console.log('Skipping match without metadata');
         continue;
       }
 
@@ -70,7 +55,6 @@ export async function POST(request: Request) {
       };
 
       if (!match.id) {
-        console.log('Skipping match without ID:', { title, url });
         continue;
       }
 
@@ -93,7 +77,6 @@ export async function POST(request: Request) {
           VALUES 
           (${sessionId}, ${descriptionId}, ${match.id}, ${match.score}, ${i + 1})
         `;
-        console.log('Stored search result for book:', match.id);
       } catch (dbError: unknown) {
         const error = dbError as {
           name?: string;
@@ -102,14 +85,11 @@ export async function POST(request: Request) {
           detail?: string;
           hint?: string;
         };
-        console.error('Error storing search result:', error);
-        // Continue with next result even if storage fails
       }
     }
 
     return NextResponse.json(queryResponse);
   } catch (error) {
-    console.error('Search error:', error);
     return NextResponse.json(
       { error: 'Failed to perform search' },
       { status: 500 }

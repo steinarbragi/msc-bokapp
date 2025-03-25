@@ -75,12 +75,10 @@ export default function Page() {
         questions={initialQuestions}
         submitButtonText='Finna bækur 🚀'
         onComplete={async answers => {
-          console.log('Survey answers:', answers);
           setSurveyResponses(answers);
 
           try {
             // First, get the session ID from the questions API
-            console.log('Fetching session ID from questions API...');
             const questionsResponse = await fetch('/api/survey/questions', {
               method: 'POST',
               headers: {
@@ -96,12 +94,10 @@ export default function Page() {
             }
 
             const questionsData = await questionsResponse.json();
-            console.log('Questions API response:', questionsData);
             const sessionId = questionsData.sessionId;
             setSessionId(sessionId);
 
             // Then, get the prompt with the session ID
-            console.log('Fetching prompt with session ID:', sessionId);
             const promptResponse = await fetch('/api/prompt', {
               method: 'POST',
               headers: {
@@ -120,7 +116,6 @@ export default function Page() {
             }
 
             const promptData = await promptResponse.json();
-            console.log('Prompt API response:', promptData);
             setCoverDescription(promptData.coverDescription);
             setDescriptionId(promptData.descriptionId);
 
