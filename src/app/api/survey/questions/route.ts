@@ -16,12 +16,14 @@ type AnthropicMessage = {
 // Helper function to make API call with retries
 async function createMessageWithRetry(
   messages: AnthropicMessage[],
-  maxRetries = 6
+  maxRetries = 3
 ) {
+  let currentModel = 'claude-3-7-sonnet-latest';
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await anthropic.messages.create({
-        model: 'claude-3-5-haiku-latest',
+        model: currentModel,
         max_tokens: 1000,
         messages,
         tools: [
@@ -76,13 +78,21 @@ async function createMessageWithRetry(
       // Check if error is an Error object with status 529
       if (error instanceof Error && 'status' in error && error.status === 529) {
         console.log(
-          `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error, retrying...`
+          `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error on model ${currentModel}, retrying...`
         );
+
+        // If we're using Sonnet, switch to Haiku
+        if (currentModel === 'claude-3-7-sonnet-latest') {
+          console.log('Switching to Haiku model...');
+          currentModel = 'claude-3-5-haiku-latest';
+          continue;
+        }
+
         if (attempt === maxRetries - 1) {
           throw error; // Rethrow if we're out of retries
         }
-        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
-        const delayTime = Math.pow(2, attempt) * 2000; // Increased base delay to 2 seconds
+        // Exponential backoff: 2s, 4s, 8s
+        const delayTime = Math.pow(2, attempt) * 2000;
         console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
         await delay(delayTime);
         continue;
