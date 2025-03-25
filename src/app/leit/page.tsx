@@ -207,7 +207,10 @@ export default function SearchPage() {
                         {book.metadata.description}
                       </p>
                       <button
-                        onClick={() => toggleReadStatus(book.id)}
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleReadStatus(book.id);
+                        }}
                         className={`w-full rounded-lg px-4 py-3 text-lg font-medium transition-all ${
                           readBooks.has(book.id)
                             ? 'bg-green-600 text-white hover:bg-green-700'
