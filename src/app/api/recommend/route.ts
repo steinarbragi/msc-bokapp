@@ -112,7 +112,7 @@ export async function POST(req: Request) {
 
     // Filter out already read books
     const unreadBooks = searchResults.filter(
-      (book: Book) => !readBooks.includes(book.metadata.id)
+      (book: Book) => !readBooks.includes(book.id)
     );
 
     // Prepare the prompt for Claude
