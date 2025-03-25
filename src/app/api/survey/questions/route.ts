@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Anthropic } from '@anthropic-ai/sdk';
+import { neon } from '@neondatabase/serverless';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -13,6 +14,20 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 type AnthropicMessage = {
   role: 'user' | 'assistant';
   content: string;
+};
+
+type Question = {
+  text: string;
+  id: string;
+  type: 'single-choice' | 'multiple-choice';
+  options: string[];
+  allowTextInput?: boolean;
+};
+
+type ToolUseResponse = {
+  input: {
+    questions: Question[];
+  };
 };
 
 // Helper function to make API call with retries
@@ -30,9 +45,9 @@ async function createMessageWithRetry(
         messages,
         tools: [
           {
-            name: 'get_follow_up_questions',
+            name: 'generate_questions',
             description:
-              'Búðu til 3 framhaldsspurningar byggðar á svörum við könnun. Spurningarnar ættu að tengjast fyrri svörum og hjálpa til við að sérsníða söguna enn frekar. Hver spurning ætti að hafa 3-8 valmöguleika og má valfrjálst leyfa sérsniðinn texta.',
+              'Generate follow-up questions based on survey responses',
             input_schema: {
               type: 'object',
               properties: {
@@ -77,13 +92,11 @@ async function createMessageWithRetry(
         ],
       });
     } catch (error: unknown) {
-      // Check if error is an Error object with status 529
       if (error instanceof Error && 'status' in error && error.status === 529) {
         console.log(
           `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error on model ${currentModel}, retrying...`
         );
 
-        // If we're using Sonnet, switch to Haiku
         if (currentModel === 'claude-3-7-sonnet-latest') {
           console.log('Switching to Haiku model...');
           currentModel = 'claude-3-5-haiku-latest';
@@ -91,15 +104,14 @@ async function createMessageWithRetry(
         }
 
         if (attempt === maxRetries - 1) {
-          throw error; // Rethrow if we're out of retries
+          throw error;
         }
-        // Exponential backoff: 2s, 4s, 8s
         const delayTime = Math.pow(2, attempt) * 2000;
         console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
         await delay(delayTime);
         continue;
       }
-      throw error; // Rethrow other errors
+      throw error;
     }
   }
   throw new Error('Failed to create message after all retries');
@@ -108,41 +120,60 @@ async function createMessageWithRetry(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const userSurveyResponses = body.surveyResponses;
+    const { surveyResponses } = body;
 
+    console.log('Received survey responses:', surveyResponses);
+
+    const sql = neon(process.env.DATABASE_URL!);
+
+    // Create a new session
+    const sessionResult = await sql`
+      INSERT INTO survey_sessions (id) 
+      VALUES (gen_random_uuid()) 
+      RETURNING id
+    `;
+    const sessionId = sessionResult[0].id;
+
+    console.log('Created new session:', sessionId);
+
+    // Store pre-generation survey responses
+    for (const [questionKey, response] of Object.entries(surveyResponses)) {
+      await sql`
+        INSERT INTO pre_generation_responses (session_id, question_key, response)
+        VALUES (${sessionId}, ${questionKey}, ${response})
+      `;
+    }
+
+    console.log('Stored pre-generation responses');
+
+    // Get follow-up questions based on responses
     const response = await createMessageWithRetry([
       {
         role: 'user',
-        content: `Þú VERÐUR að nota uppgefna fallið til að skila skipulögðum framhaldsspurningum.
-Ekki svara með texta eða útskýringum - AÐEINS nota fallið.
-Fallið krefst nákvæmlega 3 spurninga, hver með 3-8 valmöguleika.
-Hver spurning verður að hafa einkvæmt auðkenni, texta, tegund (single-choice eða multiple-choice) og valmöguleikafjölda.
-allowTextInput reiturinn er valfrjáls og er sjálfgefið false.
+        content: `Based on these survey responses: ${JSON.stringify(surveyResponses, null, 2)}
 
-Út frá þessum svörum við könnuninni: ${JSON.stringify(userSurveyResponses, null, 2)}, búðu til 3 framhaldsspurningar sem myndu hjálpa til við að sérsníða söguna enn frekar.`,
+Generate 3 follow-up questions to help customize the story further. Each question should:
+- Have a unique ID (e.g., 'question1', 'question2', etc.)
+- Have clear text in Icelandic
+- Be either single-choice or multiple-choice
+- Have 3-8 options in Icelandic
+- Optionally allow text input (default to false)
+
+Make sure the questions are relevant to the user's previous responses and help narrow down their preferences for the story.`,
       },
     ]);
 
-    if (!response) {
-      throw new Error('No response received from API');
-    }
-
-    // Log the response structure for debugging
-    console.log('Response content:', JSON.stringify(response.content, null, 2));
+    console.log('Got response from Claude:', response);
 
     // Extract questions from the response
-    let questions = [];
-
-    // First try to find questions in tool_use block
+    let questions: Question[] = [];
     for (const block of response.content) {
       if (block.type === 'tool_use') {
-        console.log('Found tool_use block');
-        // @ts-expect-error - block.input is not typed but exists at runtime
-        if (block.input && block.input.questions) {
-          // @ts-expect-error - block.input.questions is not typed but exists at runtime
-          questions = block.input.questions;
+        const toolUse = block as unknown as ToolUseResponse;
+        if (toolUse.input?.questions) {
+          questions = toolUse.input.questions;
           console.log(
-            'Extracted questions from block.input.questions:',
+            'Successfully extracted questions from tool use:',
             questions
           );
           break;
@@ -150,35 +181,9 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.
       }
     }
 
-    // If no questions found in tool_use block, try to parse JSON from text block
+    // If no questions found, use fallbacks
     if (!questions || questions.length === 0) {
-      for (const block of response.content) {
-        if (block.type === 'text') {
-          try {
-            // Extract JSON from the text block (removing markdown code block markers)
-            const jsonStr = block.text.replace(/```json\n|\n```/g, '');
-            const parsed = JSON.parse(jsonStr);
-            if (
-              parsed.followupQuestions &&
-              Array.isArray(parsed.followupQuestions)
-            ) {
-              questions = parsed.followupQuestions;
-              console.log(
-                'Extracted questions from JSON text block:',
-                questions
-              );
-              break;
-            }
-          } catch (e) {
-            console.log('Failed to parse JSON from text block:', e);
-          }
-        }
-      }
-    }
-
-    // If we still don't have valid questions, use fallbacks
-    if (!questions || questions.length === 0) {
-      console.log('No questions found, using fallbacks');
+      console.log('Using fallback questions');
       questions = [
         {
           id: 'fallback1',
@@ -222,9 +227,8 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.
 
     return NextResponse.json({
       success: true,
+      sessionId,
       questions,
-      // Include the raw response for debugging
-      rawResponse: response.content,
     });
   } catch (error) {
     console.error('Error generating follow-up questions:', error);
