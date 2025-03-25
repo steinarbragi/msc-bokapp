@@ -27,6 +27,7 @@ export function NavigationButtons({
 
   const shouldShowNext = !isLastQuestion && !isComplete && hasAnswer;
   const shouldShowSkip = !isLastQuestion && !isComplete && !hasAnswer;
+  const shouldShowSubmit = isComplete || isLastQuestion;
 
   return (
     <>
@@ -52,7 +53,7 @@ export function NavigationButtons({
         </motion.button>
       )}
 
-      {isComplete && (
+      {shouldShowSubmit && (
         <motion.button
           type='submit'
           className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
