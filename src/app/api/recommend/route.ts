@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { neon } from '@neondatabase/serverless';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -16,12 +17,12 @@ type AnthropicMessage = {
 };
 
 type Book = {
+  id: string;
   metadata: {
     title: string;
     description: string;
     image_url: string;
     url: string;
-    id: string;
   };
 };
 
@@ -66,7 +67,48 @@ async function createMessageWithRetry(
 
 export async function POST(req: Request) {
   try {
-    const { searchResults, readBooks, surveyResponses } = await req.json();
+    const { searchResults, readBooks, surveyResponses, sessionId } =
+      await req.json();
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const sql = neon(process.env.DATABASE_URL!);
+
+    // Store read books
+    for (const bookId of readBooks) {
+      try {
+        // First check if the book exists
+        const bookExists = await sql`
+          SELECT id FROM books WHERE id = ${bookId}
+        `;
+
+        if (bookExists.length > 0) {
+          await sql`
+            INSERT INTO read_books (session_id, book_id)
+            VALUES (${sessionId}, ${bookId})
+            ON CONFLICT DO NOTHING
+          `;
+          console.log('Stored read book:', bookId);
+        } else {
+          console.log('Skipping read book that does not exist:', bookId);
+        }
+      } catch (dbError: unknown) {
+        const error = dbError as {
+          name?: string;
+          message?: string;
+          code?: string;
+          detail?: string;
+          hint?: string;
+        };
+        console.error('Error storing read book:', error);
+        // Continue with next book even if storage fails
+      }
+    }
 
     // Filter out already read books
     const unreadBooks = searchResults.filter(
@@ -92,12 +134,14 @@ Svarið þarf að vera á forminu:
 osf.
 
 Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þennan notanda, með tilliti til þeirra svara sem hann gaf.`;
+
     const completion = await createMessageWithRetry([
       { role: 'user', content: prompt },
     ]);
 
     const recommendations =
       'text' in completion.content[0] ? completion.content[0].text : '';
+
     // Extract book titles in order from the recommendations
     const orderedTitles = recommendations
       .split('\n')
@@ -111,14 +155,22 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
       );
 
     // Match the recommendations with the full book data and reorder based on the titles
-    const recommendedBooks = orderedTitles
-      .map(title => {
+    const recommendedBooks = await Promise.all(
+      orderedTitles.map(async (title, index) => {
+        // Find the book in unreadBooks
         const book = unreadBooks.find((b: Book) => b.metadata.title === title);
-        if (!book) {
-          console.log('No match found for title:', title);
+
+        if (!book || !book.metadata) {
+          console.log('No valid match found for title:', title);
           return null;
         }
-        console.log('Found match for title:', title);
+
+        if (!book.id) {
+          console.log('Book missing ID:', book);
+          return null;
+        }
+
+        console.log('Found match for title:', title, 'with ID:', book.id);
 
         const reasoning =
           recommendations
@@ -126,14 +178,39 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
             .find(line => line.includes(title))
             ?.split(': ')[1] || 'Engin útskýring tiltæk';
 
+        // Store recommendation in database
+        try {
+          await sql`
+            INSERT INTO recommendations 
+            (session_id, book_id, reasoning, rank_position)
+            VALUES 
+            (${sessionId}, ${book.id}, ${reasoning}, ${index + 1})
+          `;
+          console.log('Stored recommendation for book:', book.id);
+        } catch (dbError: unknown) {
+          const error = dbError as {
+            name?: string;
+            message?: string;
+            code?: string;
+            detail?: string;
+            hint?: string;
+          };
+          console.error('Error storing recommendation:', error);
+          // Continue with next recommendation even if storage fails
+        }
+
         return {
           ...book,
           reasoning,
         };
       })
-      .filter((book): book is Book & { reasoning: string } => book !== null);
+    );
 
-    return NextResponse.json({ recommendations: recommendedBooks });
+    // Filter out any null values before returning
+    const validRecommendations = recommendedBooks.filter(
+      (book): book is Book & { reasoning: string } => book !== null
+    );
+    return NextResponse.json({ recommendations: validRecommendations });
   } catch (error) {
     console.error('Error in recommend route:', error);
     return NextResponse.json(

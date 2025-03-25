@@ -3,7 +3,6 @@
 import { QuestionProvider } from './QuestionContext';
 import Questions from './questions';
 import { useRouter } from 'next/navigation';
-
 import { Question } from './types';
 import { useBook } from '../context/BookContext';
 
@@ -63,29 +62,73 @@ const initialQuestions: Question[] = [
 
 export default function Page() {
   const router = useRouter();
-  const { setCoverDescription, setSurveyResponses } = useBook();
+  const {
+    setCoverDescription,
+    setSurveyResponses,
+    setSessionId,
+    setDescriptionId,
+  } = useBook();
+
   return (
     <QuestionProvider initialQuestions={initialQuestions}>
       <Questions
         questions={initialQuestions}
         submitButtonText='Finna bækur 🚀'
-        onComplete={answers => {
+        onComplete={async answers => {
           console.log('Survey answers:', answers);
           setSurveyResponses(answers);
-          fetch('/api/prompt', {
-            method: 'POST',
-            body: JSON.stringify({ surveyResponses: answers }),
-          })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Prompt response:', data);
-              setCoverDescription(data.coverDescription);
-              router.push('/leit');
-            })
-            .catch(error => {
-              console.error('Error:', error);
-              router.push('/leit');
+
+          try {
+            // First, get the session ID from the questions API
+            console.log('Fetching session ID from questions API...');
+            const questionsResponse = await fetch('/api/survey/questions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ surveyResponses: answers }),
             });
+
+            if (!questionsResponse.ok) {
+              const errorText = await questionsResponse.text();
+              console.error('Questions API error:', errorText);
+              throw new Error('Failed to get session ID');
+            }
+
+            const questionsData = await questionsResponse.json();
+            console.log('Questions API response:', questionsData);
+            const sessionId = questionsData.sessionId;
+            setSessionId(sessionId);
+
+            // Then, get the prompt with the session ID
+            console.log('Fetching prompt with session ID:', sessionId);
+            const promptResponse = await fetch('/api/prompt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                surveyResponses: answers,
+                sessionId,
+              }),
+            });
+
+            if (!promptResponse.ok) {
+              const errorText = await promptResponse.text();
+              console.error('Prompt API error:', errorText);
+              throw new Error('Failed to generate prompt');
+            }
+
+            const promptData = await promptResponse.json();
+            console.log('Prompt API response:', promptData);
+            setCoverDescription(promptData.coverDescription);
+            setDescriptionId(promptData.descriptionId);
+
+            router.push('/leit');
+          } catch (error) {
+            console.error('Error:', error);
+            router.push('/leit');
+          }
         }}
       />
     </QuestionProvider>

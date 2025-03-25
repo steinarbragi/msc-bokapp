@@ -1,21 +1,31 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface BookContextType {
-  coverDescription: string;
+type SurveyResponse = {
+  [key: string]: string | string[];
+};
+
+type BookContextType = {
+  coverDescription: string | null;
   setCoverDescription: (description: string) => void;
-  surveyResponses: Record<string, string | string[]>;
-  setSurveyResponses: (responses: Record<string, string | string[]>) => void;
-}
+  surveyResponses: SurveyResponse | null;
+  setSurveyResponses: (responses: SurveyResponse) => void;
+  sessionId: string | null;
+  setSessionId: (id: string) => void;
+  descriptionId: string | null;
+  setDescriptionId: (id: string) => void;
+};
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
 
 export function BookProvider({ children }: { children: ReactNode }) {
-  const [coverDescription, setCoverDescription] = useState('');
-  const [surveyResponses, setSurveyResponses] = useState<
-    Record<string, string | string[]>
-  >({});
+  const [coverDescription, setCoverDescription] = useState<string | null>(null);
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse | null>(
+    null
+  );
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [descriptionId, setDescriptionId] = useState<string | null>(null);
 
   return (
     <BookContext.Provider
@@ -24,6 +34,10 @@ export function BookProvider({ children }: { children: ReactNode }) {
         setCoverDescription,
         surveyResponses,
         setSurveyResponses,
+        sessionId,
+        setSessionId,
+        descriptionId,
+        setDescriptionId,
       }}
     >
       {children}

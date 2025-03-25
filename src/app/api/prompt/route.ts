@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Anthropic } from '@anthropic-ai/sdk';
+import { neon } from '@neondatabase/serverless';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -61,7 +62,18 @@ async function createMessageWithRetry(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { surveyResponses } = body;
+    const { surveyResponses, sessionId } = body;
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Received request with sessionId:', sessionId);
+
+    const sql = neon(process.env.DATABASE_URL!);
 
     // Build preferences string from all survey responses
     const preferences = Object.entries(surveyResponses)
@@ -71,6 +83,8 @@ export async function POST(request: Request) {
         return `${key}: ${formattedValue}`;
       })
       .join('\n');
+
+    console.log('Generating description with preferences:', preferences);
 
     const response = await createMessageWithRetry([
       {
@@ -84,10 +98,66 @@ export async function POST(request: Request) {
       },
     ]);
 
+    const description =
+      'text' in response.content[0] ? response.content[0].text : '';
+
+    console.log('Generated description:', description);
+
+    let descriptionId: string | undefined;
+    try {
+      // Store the generated description
+      console.log('Attempting to store description in database...');
+      console.log('Description length:', description.length);
+      console.log('Session ID:', sessionId);
+
+      const descriptionResult = await sql`
+        INSERT INTO generated_descriptions (session_id, description_text)
+        VALUES (${sessionId}, ${description})
+        RETURNING id
+      `;
+
+      console.log('Database result:', descriptionResult);
+
+      if (!descriptionResult || descriptionResult.length === 0) {
+        console.error('No description ID returned from database');
+        throw new Error('No description ID returned from database');
+      }
+
+      descriptionId = descriptionResult[0].id;
+      console.log(
+        'Successfully stored description in database with ID:',
+        descriptionId
+      );
+    } catch (dbError: unknown) {
+      const error = dbError as {
+        name?: string;
+        message?: string;
+        code?: string;
+        detail?: string;
+        hint?: string;
+      };
+      console.error('Database error details:', {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        detail: error.detail,
+        hint: error.hint,
+      });
+      throw dbError; // Rethrow to handle in outer catch block
+    }
+
+    if (!descriptionId) {
+      console.error('Failed to get description ID from database');
+      return NextResponse.json(
+        { error: 'Failed to store description' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      coverDescription:
-        'text' in response.content[0] ? response.content[0].text : '',
+      coverDescription: description,
+      descriptionId,
     });
   } catch (error) {
     console.error('Error generating book cover description:', error);

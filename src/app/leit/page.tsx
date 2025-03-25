@@ -20,7 +20,8 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
-  const { coverDescription, surveyResponses } = useBook();
+  const { coverDescription, surveyResponses, sessionId, descriptionId } =
+    useBook();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +32,10 @@ export default function SearchPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSearch = useCallback(async () => {
-    if (!coverDescription) return;
+    if (!coverDescription || !sessionId || !descriptionId) return;
 
     setIsLoading(true);
-    setError(null); // Clear any previous errors
+    setError(null);
 
     try {
       // First get the embedding for the search query
@@ -56,16 +57,6 @@ export default function SearchPage() {
 
       const { vector } = await embedResponse.json();
 
-      // Add logging to debug the vector
-      console.log('Vector type:', typeof vector);
-      console.log('Vector length:', vector.length);
-      console.log('First few values:', vector.slice(0, 5));
-
-      console.log(
-        'Sending to search:',
-        JSON.stringify({ vector, topK: 50 }, null, 2)
-      );
-
       // Then search Pinecone with the embedding
       const searchResponse = await fetch('/api/search', {
         method: 'POST',
@@ -75,6 +66,8 @@ export default function SearchPage() {
         body: JSON.stringify({
           vector,
           topK: 50,
+          sessionId,
+          descriptionId,
         }),
       });
 
@@ -96,7 +89,7 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [coverDescription]);
+  }, [coverDescription, sessionId, descriptionId]);
 
   const toggleReadStatus = (bookId: string) => {
     setReadBooks(prev => {
@@ -111,6 +104,8 @@ export default function SearchPage() {
   };
 
   const getRecommendations = async () => {
+    if (!sessionId) return;
+
     setIsProcessing(true);
     try {
       console.log('Starting to get recommendations...');
@@ -123,6 +118,7 @@ export default function SearchPage() {
           searchResults: results,
           readBooks: Array.from(readBooks),
           surveyResponses,
+          sessionId,
         }),
       });
 
