@@ -1,6 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import { NextResponse } from 'next/server';
 
+export const maxDuration = 150;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

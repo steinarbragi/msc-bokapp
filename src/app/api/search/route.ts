@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone';
 
+export const maxDuration = 150;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

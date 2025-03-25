@@ -4,6 +4,8 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
 });
 
+export const maxDuration = 150;
+
 export async function POST(request: Request) {
   try {
     const { text } = await request.json();
