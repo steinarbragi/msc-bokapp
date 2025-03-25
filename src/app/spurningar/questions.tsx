@@ -181,8 +181,8 @@ export default function Questions({
 
           setHasGeneratedQuestions(true);
           setQuestions((prev: Question[]) => [...prev, ...fallbackQuestions]);
-          setIsLoadingMore(false);
           setCurrentStep(initialQuestions.length);
+          setIsLoadingMore(false);
           return;
         }
 
@@ -197,16 +197,15 @@ export default function Questions({
 
         setHasGeneratedQuestions(true);
         setQuestions((prev: Question[]) => [...prev, ...newQuestions]);
-        setIsLoadingMore(false);
         setCurrentStep(initialQuestions.length);
-      } else {
-        setHasGeneratedQuestions(true);
         setIsLoadingMore(false);
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
-      setHasGeneratedQuestions(true);
-      setIsLoadingMore(false);
       console.error('Error generating questions:', error);
+      setIsLoadingMore(false);
+      // You might want to show an error message to the user here
     }
   };
 
