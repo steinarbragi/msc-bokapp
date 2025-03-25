@@ -84,10 +84,11 @@ ${Object.entries(surveyResponses || {})
 Hér er listi af bókum sem notandi hefur ekki lesið:
 ${unreadBooks.map((book: Book) => `- ${book.metadata.title}: ${book.metadata.description}`).join('\n')}
 
-Veldu 10 bestu bækurnar úr listanum og útskýrðu í STUTTU máli (hámark 2 setningar) af hverju hver bók er góður kostur fyrir þennan notanda, með tilliti til þeirra svara sem hann gaf.
+Veldu 10 bestu bækurnar úr listanum fyrir þennan notanda. Fyrir hverja bók skaltu útskýra í tveimur málsgreinum af hverju þú telur að bókin henti notandanum vel, með því að tala beint við notandann (t.d. "Þessi bók mun heilla þig..."). Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál.
+
 Svarið þarf að vera á forminu:
-1. [Titill bókar]: [Útskýring]
-2. [Titill bókar]: [Útskýring]
+1. [Titill bókar]: [Útskýring í tveimur málsgreinum sem talar beint til notandans]
+2. [Titill bókar]: [Útskýring í tveimur málsgreinum sem talar beint til notandans]
 osf.
 
 Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þennan notanda, með tilliti til þeirra svara sem hann gaf.`;
@@ -97,7 +98,6 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
 
     const recommendations =
       'text' in completion.content[0] ? completion.content[0].text : '';
-
     // Extract book titles in order from the recommendations
     const orderedTitles = recommendations
       .split('\n')
@@ -107,13 +107,18 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
           .split(':')[0]
           .trim()
           .replace(/^\d+\.\s*/, '')
+          .replace(/^"|"$/g, '')
       );
 
     // Match the recommendations with the full book data and reorder based on the titles
     const recommendedBooks = orderedTitles
       .map(title => {
         const book = unreadBooks.find((b: Book) => b.metadata.title === title);
-        if (!book) return null;
+        if (!book) {
+          console.log('No match found for title:', title);
+          return null;
+        }
+        console.log('Found match for title:', title);
 
         const reasoning =
           recommendations

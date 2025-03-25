@@ -268,9 +268,9 @@ export default function SearchPage() {
                         {recommendations.map((book, index) => (
                           <div
                             key={index}
-                            className='flex transform gap-6 rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl'
+                            className='flex transform flex-col rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8'
                           >
-                            <div className='w-48 flex-shrink-0'>
+                            <div className='mx-auto w-48 flex-shrink-0 md:mx-0'>
                               {book.metadata.image_url && (
                                 <Image
                                   src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
@@ -281,7 +281,7 @@ export default function SearchPage() {
                                 />
                               )}
                             </div>
-                            <div className='flex-grow'>
+                            <div className='mt-4 md:mt-0'>
                               <h2 className='mb-2 text-xl font-semibold text-purple-800'>
                                 {book.metadata.title}
                               </h2>
