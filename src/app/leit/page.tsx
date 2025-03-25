@@ -20,7 +20,7 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
-  const { coverDescription } = useBook();
+  const { coverDescription, surveyResponses } = useBook();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +121,7 @@ export default function SearchPage() {
         body: JSON.stringify({
           searchResults: results,
           readBooks: Array.from(readBooks),
+          surveyResponses,
         }),
       });
 

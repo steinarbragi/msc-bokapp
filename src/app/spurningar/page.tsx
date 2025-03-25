@@ -63,7 +63,7 @@ const initialQuestions: Question[] = [
 
 export default function Page() {
   const router = useRouter();
-  const { setCoverDescription } = useBook();
+  const { setCoverDescription, setSurveyResponses } = useBook();
   return (
     <QuestionProvider initialQuestions={initialQuestions}>
       <Questions
@@ -71,6 +71,7 @@ export default function Page() {
         submitButtonText='Finna bækur 🚀'
         onComplete={answers => {
           console.log('Survey answers:', answers);
+          setSurveyResponses(answers);
           fetch('/api/prompt', {
             method: 'POST',
             body: JSON.stringify({ surveyResponses: answers }),
