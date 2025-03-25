@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { BookProvider } from './context/BookContext';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -39,6 +40,11 @@ export default function RootLayout({
               height={100}
               className='mx-auto mt-10'
             />
+            <div className='m-10 flex justify-center'>
+              <Link className='text-center text-blue-900' href='/skilmalar'>
+                Skilmálar
+              </Link>
+            </div>
           </div>
         </BookProvider>
       </body>
