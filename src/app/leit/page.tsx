@@ -266,8 +266,11 @@ export default function SearchPage() {
                       </div>
                       <div className='space-y-6'>
                         {recommendations.map((book, index) => (
-                          <div
+                          <Link
                             key={index}
+                            href={`https://leitir.is/discovery/search?query=any,contains,${encodeURIComponent(book.metadata.title)}&tab=MyLibrary&search_scope=10000_MYLIB&vid=354ILC_NETWORK:10000_UNION&offset=0`}
+                            target='_blank'
+                            rel='noopener noreferrer'
                             className='flex transform flex-col rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8'
                           >
                             <div className='mx-auto w-48 flex-shrink-0 md:mx-0'>
@@ -298,7 +301,7 @@ export default function SearchPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     </div>

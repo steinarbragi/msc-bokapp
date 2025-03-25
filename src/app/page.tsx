@@ -37,14 +37,12 @@ export default function Home() {
                 Segðu okkur hvað þér finnst skemmtilegt að lesa
               </span>
             </li>
-            {/* Falið þangað til við útfærum þetta
             <li className='flex items-center'>
               <span className='mr-2 text-2xl'>📚</span>
               <span className='text-lg'>
                 Deildu með okkur bókunum sem þú hefur lesið áður
               </span>
             </li>
-            */}
             <li className='flex items-center'>
               <span className='mr-2 text-2xl'>✨</span>
               <span className='text-lg'>
