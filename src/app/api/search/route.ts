@@ -85,11 +85,13 @@ export async function POST(request: Request) {
           detail?: string;
           hint?: string;
         };
+        console.error('Error storing book metadata or search result:', error);
       }
     }
 
     return NextResponse.json(queryResponse);
   } catch (error) {
+    console.error('Error in search route:', error);
     return NextResponse.json(
       { error: 'Failed to perform search' },
       { status: 500 }

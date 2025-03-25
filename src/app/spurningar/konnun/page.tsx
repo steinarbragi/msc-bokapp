@@ -3,8 +3,11 @@
 import Survey from './survey';
 import { useRouter } from 'next/navigation';
 import { Question } from '../types';
+import { useBook } from '../../context/BookContext';
+
 export default function SurveyPage() {
   const router = useRouter();
+  const { sessionId } = useBook();
   const questions: Question[] = [
     {
       id: 1,
@@ -102,8 +105,24 @@ export default function SurveyPage() {
     <Survey
       questions={questions}
       submitButtonText='Ljúka könnun 🙏'
-      onComplete={answers => {
-        router.push('/takk');
+      onComplete={async answers => {
+        try {
+          await fetch('/api/survey/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              responses: answers,
+              sessionId: sessionId,
+            }),
+          });
+          router.push('/takk');
+        } catch (error) {
+          console.error('Failed to submit survey:', error);
+          // Still redirect even if submission fails
+          router.push('/takk');
+        }
       }}
     />
   );
