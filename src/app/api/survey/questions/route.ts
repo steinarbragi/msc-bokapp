@@ -63,7 +63,8 @@ async function createMessageWithRetry(
                       },
                       id: {
                         type: 'string',
-                        description: 'unique identifier for the question',
+                        description:
+                          'descriptive hyphenated short identifier for the question',
                       },
                       type: {
                         type: 'string',
