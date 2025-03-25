@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       .join('\n');
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-latest',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1000,
       messages: [
         {

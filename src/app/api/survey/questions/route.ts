@@ -5,73 +5,115 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+type AnthropicMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+// Helper function to make API call with retries
+async function createMessageWithRetry(
+  messages: AnthropicMessage[],
+  maxRetries = 6
+) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await anthropic.messages.create({
+        model: 'claude-3-5-haiku-latest',
+        max_tokens: 1000,
+        messages,
+        tools: [
+          {
+            name: 'get_follow_up_questions',
+            description:
+              'Búðu til 3 framhaldsspurningar byggðar á svörum við könnun. Spurningarnar ættu að tengjast fyrri svörum og hjálpa til við að sérsníða söguna enn frekar. Hver spurning ætti að hafa 3-8 valmöguleika og má valfrjálst leyfa sérsniðinn texta.',
+            input_schema: {
+              type: 'object',
+              properties: {
+                questions: {
+                  type: 'array',
+                  description: 'Listi af framhaldsspurningum',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      text: {
+                        type: 'string',
+                        description: 'Spurningartextinn',
+                      },
+                      id: {
+                        type: 'string',
+                        description: 'unique identifier for the question',
+                      },
+                      type: {
+                        type: 'string',
+                        enum: ['single-choice', 'multiple-choice'],
+                        description: 'Tegund spurningar',
+                      },
+                      options: {
+                        type: 'array',
+                        description: 'Svarmöguleikar fyrir spurninguna',
+                        items: { type: 'string' },
+                        minItems: 3,
+                        maxItems: 8,
+                      },
+                      allowTextInput: {
+                        type: 'boolean',
+                        description: 'Hvort leyfa eigi sérsniðinn texta',
+                      },
+                    },
+                    required: ['id', 'text', 'type', 'options'],
+                  },
+                },
+              },
+              required: ['questions'],
+            },
+          },
+        ],
+      });
+    } catch (error: unknown) {
+      // Check if error is an Error object with status 529
+      if (error instanceof Error && 'status' in error && error.status === 529) {
+        console.log(
+          `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error, retrying...`
+        );
+        if (attempt === maxRetries - 1) {
+          throw error; // Rethrow if we're out of retries
+        }
+        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+        const delayTime = Math.pow(2, attempt) * 2000; // Increased base delay to 2 seconds
+        console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
+        await delay(delayTime);
+        continue;
+      }
+      throw error; // Rethrow other errors
+    }
+  }
+  throw new Error('Failed to create message after all retries');
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const userSurveyResponses = body.surveyResponses;
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-latest',
-      max_tokens: 1000,
-      messages: [
-        {
-          role: 'user',
-          content: `Út frá þessum svörum við könnuninni: ${JSON.stringify(userSurveyResponses, null, 2)}, búðu til 3 framhaldsspurningar sem myndu hjálpa til við að sérsníða söguna enn frekar.`,
-        },
-      ],
-      system: `Þú VERÐUR að nota uppgefna fallið til að skila skipulögðum framhaldsspurningum.
+    const response = await createMessageWithRetry([
+      {
+        role: 'user',
+        content: `Þú VERÐUR að nota uppgefna fallið til að skila skipulögðum framhaldsspurningum.
 Ekki svara með texta eða útskýringum - AÐEINS nota fallið.
 Fallið krefst nákvæmlega 3 spurninga, hver með 3-8 valmöguleika.
 Hver spurning verður að hafa einkvæmt auðkenni, texta, tegund (single-choice eða multiple-choice) og valmöguleikafjölda.
-allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
-      tools: [
-        {
-          name: 'get_follow_up_questions',
-          description:
-            'Búðu til 3 framhaldsspurningar byggðar á svörum við könnun. Spurningarnar ættu að tengjast fyrri svörum og hjálpa til við að sérsníða söguna enn frekar. Hver spurning ætti að hafa 3-8 valmöguleika og má valfrjálst leyfa sérsniðinn texta.',
-          input_schema: {
-            type: 'object',
-            properties: {
-              questions: {
-                type: 'array',
-                description: 'Listi af framhaldsspurningum',
-                items: {
-                  type: 'object',
-                  properties: {
-                    text: {
-                      type: 'string',
-                      description: 'Spurningartextinn',
-                    },
-                    id: {
-                      type: 'string',
-                      description: 'unique identifier for the question',
-                    },
-                    type: {
-                      type: 'string',
-                      enum: ['single-choice', 'multiple-choice'],
-                      description: 'Tegund spurningar',
-                    },
-                    options: {
-                      type: 'array',
-                      description: 'Svarmöguleikar fyrir spurninguna',
-                      items: { type: 'string' },
-                      minItems: 3,
-                      maxItems: 8,
-                    },
-                    allowTextInput: {
-                      type: 'boolean',
-                      description: 'Hvort leyfa eigi sérsniðinn texta',
-                    },
-                  },
-                  required: ['id', 'text', 'type', 'options'],
-                },
-              },
-            },
-            required: ['questions'],
-          },
-        },
-      ],
-    });
+allowTextInput reiturinn er valfrjáls og er sjálfgefið false.
+
+Út frá þessum svörum við könnuninni: ${JSON.stringify(userSurveyResponses, null, 2)}, búðu til 3 framhaldsspurningar sem myndu hjálpa til við að sérsníða söguna enn frekar.`,
+      },
+    ]);
+
+    if (!response) {
+      throw new Error('No response received from API');
+    }
 
     // Log the response structure for debugging
     console.log('Response content:', JSON.stringify(response.content, null, 2));
@@ -79,7 +121,7 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
     // Extract questions from the response
     let questions = [];
 
-    // Look through all blocks to find the tool_use block with questions
+    // First try to find questions in tool_use block
     for (const block of response.content) {
       if (block.type === 'tool_use') {
         console.log('Found tool_use block');
@@ -91,12 +133,38 @@ allowTextInput reiturinn er valfrjáls og er sjálfgefið false.`,
             'Extracted questions from block.input.questions:',
             questions
           );
-          break; // Found questions, no need to look further
+          break;
         }
       }
     }
 
-    // If we don't have valid questions, use fallbacks
+    // If no questions found in tool_use block, try to parse JSON from text block
+    if (!questions || questions.length === 0) {
+      for (const block of response.content) {
+        if (block.type === 'text') {
+          try {
+            // Extract JSON from the text block (removing markdown code block markers)
+            const jsonStr = block.text.replace(/```json\n|\n```/g, '');
+            const parsed = JSON.parse(jsonStr);
+            if (
+              parsed.followupQuestions &&
+              Array.isArray(parsed.followupQuestions)
+            ) {
+              questions = parsed.followupQuestions;
+              console.log(
+                'Extracted questions from JSON text block:',
+                questions
+              );
+              break;
+            }
+          } catch (e) {
+            console.log('Failed to parse JSON from text block:', e);
+          }
+        }
+      }
+    }
+
+    // If we still don't have valid questions, use fallbacks
     if (!questions || questions.length === 0) {
       console.log('No questions found, using fallbacks');
       questions = [
