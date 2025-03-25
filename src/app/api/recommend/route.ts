@@ -93,9 +93,6 @@ export async function POST(req: Request) {
             VALUES (${sessionId}, ${bookId})
             ON CONFLICT DO NOTHING
           `;
-          console.log('Stored read book:', bookId);
-        } else {
-          console.log('Skipping read book that does not exist:', bookId);
         }
       } catch (dbError: unknown) {
         const error = dbError as {
@@ -161,16 +158,12 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
         const book = unreadBooks.find((b: Book) => b.metadata.title === title);
 
         if (!book || !book.metadata) {
-          console.log('No valid match found for title:', title);
           return null;
         }
 
         if (!book.id) {
-          console.log('Book missing ID:', book);
           return null;
         }
-
-        console.log('Found match for title:', title, 'with ID:', book.id);
 
         const reasoning =
           recommendations
@@ -186,7 +179,6 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
             VALUES 
             (${sessionId}, ${book.id}, ${reasoning}, ${index + 1})
           `;
-          console.log('Stored recommendation for book:', book.id);
         } catch (dbError: unknown) {
           const error = dbError as {
             name?: string;

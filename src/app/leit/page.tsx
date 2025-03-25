@@ -108,7 +108,6 @@ export default function SearchPage() {
 
     setIsProcessing(true);
     try {
-      console.log('Starting to get recommendations...');
       const response = await fetch('/api/recommend', {
         method: 'POST',
         headers: {
@@ -127,9 +126,7 @@ export default function SearchPage() {
       }
 
       const data = await response.json();
-      console.log('Received recommendations:', data.recommendations);
       setRecommendations(data.recommendations);
-      console.log('Updated recommendations state');
     } catch (error) {
       console.error('Error getting recommendations:', error);
       setError(
@@ -176,12 +173,6 @@ export default function SearchPage() {
         ) : (
           <>
             {(() => {
-              console.log('Rendering conditions:', {
-                resultsLength: results.length,
-                recommendationsLength: recommendations.length,
-                showGrid: results.length > 0 && recommendations.length === 0,
-                showRecommendations: recommendations.length > 0,
-              });
               return (
                 <>
                   {results.length > 0 && recommendations.length === 0 && (

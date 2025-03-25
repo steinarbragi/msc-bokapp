@@ -107,8 +107,8 @@ async function createMessageWithRetry(
           throw error;
         }
         const delayTime = Math.pow(2, attempt) * 2000;
-        console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
         await delay(delayTime);
+        console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
         continue;
       }
       throw error;
@@ -122,8 +122,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { surveyResponses } = body;
 
-    console.log('Received survey responses:', surveyResponses);
-
     const sql = neon(process.env.DATABASE_URL!);
 
     // Create a new session
@@ -134,8 +132,6 @@ export async function POST(request: Request) {
     `;
     const sessionId = sessionResult[0].id;
 
-    console.log('Created new session:', sessionId);
-
     // Store pre-generation survey responses
     for (const [questionKey, response] of Object.entries(surveyResponses)) {
       await sql`
@@ -143,8 +139,6 @@ export async function POST(request: Request) {
         VALUES (${sessionId}, ${questionKey}, ${response})
       `;
     }
-
-    console.log('Stored pre-generation responses');
 
     // Get follow-up questions based on responses
     const response = await createMessageWithRetry([
@@ -163,8 +157,6 @@ Make sure the questions are relevant to the user's previous responses and help n
       },
     ]);
 
-    console.log('Got response from Claude:', response);
-
     // Extract questions from the response
     let questions: Question[] = [];
     for (const block of response.content) {
@@ -172,10 +164,6 @@ Make sure the questions are relevant to the user's previous responses and help n
         const toolUse = block as unknown as ToolUseResponse;
         if (toolUse.input?.questions) {
           questions = toolUse.input.questions;
-          console.log(
-            'Successfully extracted questions from tool use:',
-            questions
-          );
           break;
         }
       }
@@ -183,7 +171,6 @@ Make sure the questions are relevant to the user's previous responses and help n
 
     // If no questions found, use fallbacks
     if (!questions || questions.length === 0) {
-      console.log('Using fallback questions');
       questions = [
         {
           id: 'fallback1',

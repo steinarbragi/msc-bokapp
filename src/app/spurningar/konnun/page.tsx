@@ -103,7 +103,6 @@ export default function SurveyPage() {
       questions={questions}
       submitButtonText='Ljúka könnun 🙏'
       onComplete={answers => {
-        console.log('Survey answers:', answers);
         router.push('/takk');
       }}
     />

@@ -110,9 +110,10 @@ export default function Questions({
   };
 
   useEffect(() => {
-    console.log('isLastQuestion', isLastQuestion);
-    console.log('hasGeneratedQuestions', hasGeneratedQuestions);
-    console.log('isComplete', isComplete);
+    // Remove these debug logs:
+    // console.log('isLastQuestion', isLastQuestion);
+    // console.log('hasGeneratedQuestions', hasGeneratedQuestions);
+    // console.log('isComplete', isComplete);
   }, [isLastQuestion, hasGeneratedQuestions, isComplete]);
 
   const generateMoreQuestions = async () => {
@@ -162,7 +163,8 @@ export default function Questions({
         );
 
         if (validQuestions.length === 0) {
-          console.log('No valid questions found in response:', data);
+          // Remove these debug logs:
+          // console.log('No valid questions found in response:', data);
           const fallbackQuestions = [
             {
               id: questions.length + 1,
