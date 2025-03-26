@@ -9,7 +9,6 @@ import { StepButtons } from '@/components/StepButtons';
 import { QuestionContent } from '@/components/QuestionContent';
 import { NavigationButtons } from '@/components/NavigationButtons';
 import Loader from '@/components/loader';
-import Link from 'next/link';
 
 interface SurveyProps {
   questions: Question[];
