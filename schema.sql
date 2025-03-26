@@ -5,12 +5,13 @@ CREATE TABLE survey_sessions (
     completed_at TIMESTAMP WITH TIME ZONE
 );
 -- Table to store pre-generation survey responses
-CREATE TABLE pre_generation_responses (
+CREATE TABLE question_responses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES survey_sessions(id),
     question_key TEXT NOT NULL,
     response TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, question_key)
 );
 
 -- Table to store post-generation survey responses 
