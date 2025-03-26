@@ -51,7 +51,7 @@ export default function Home() {
 
         <p className='mb-6 text-lg'>
           Við notum gervigreind til að hjálpa þér að finna bækur sem þú gætir
-          haft gaman af. Vi1ð spyrjum þig nokkurra spurninga og mælum með bókum
+          haft gaman af. Við spyrjum þig nokkurra spurninga og mælum með bókum
           sem gætu hentað þér vel.
         </p>
 
