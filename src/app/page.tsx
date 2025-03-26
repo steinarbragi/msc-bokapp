@@ -96,8 +96,10 @@ export default function Home() {
             6-11 ára. Markmiðið er að kanna getu gervigreindar til þess auka
             lestraráhuga barna með því að veita persónuleg bókameðmæli. Gögnum
             verður safnað fyrir rannsóknarverkefni á vegum Háskóla Íslands.
-            <Link className='px-1 text-blue-900' href='/skilmalar'>
-              Notkunarskilmálar og persónuvernd
+          </p>
+          <p className='mt-2'>
+            <Link className='text-blue-900' href='/skilmalar'>
+              Skilmálar og persónuverndarstefna
             </Link>
           </p>
         </div>
