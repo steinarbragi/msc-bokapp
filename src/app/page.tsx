@@ -1,6 +1,58 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useBook } from './context/BookContext';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const { setSessionId } = useBook();
+  const router = useRouter();
+
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        const response = await fetch('/api/survey/init', {
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to initialize session');
+        }
+
+        const data = await response.json();
+        setSessionId(data.sessionId);
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      }
+    };
+
+    initSession();
+  }, [setSessionId]);
+
+  const handleStart = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent the default link behavior
+
+    try {
+      const response = await fetch('/api/survey/init', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to initialize session');
+      }
+
+      const data = await response.json();
+      console.log('Setting session ID in context:', data.sessionId);
+      setSessionId(data.sessionId);
+
+      // Navigate programmatically after setting the session ID
+      router.push('/spurningar');
+    } catch (error) {
+      console.error('Error initializing session:', error);
+    }
+  };
+
   return (
     <main className='mx-auto max-w-2xl'>
       <header className='text-center'>
@@ -22,7 +74,7 @@ export default function Home() {
 
         <p className='mb-6 text-lg'>
           Við notum gervigreind til að hjálpa þér að finna bækur sem þú gætir
-          haft gaman af. Við spyrjum þig nokkurra spurninga og mælum með bókum
+          haft gaman af. Vi1ð spyrjum þig nokkurra spurninga og mælum með bókum
           sem gætu hentað þér vel.
         </p>
 
@@ -53,12 +105,12 @@ export default function Home() {
         </div>
 
         <div className='flex justify-center'>
-          <Link
-            href='/spurningar'
+          <button
+            onClick={handleStart}
             className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:px-8'
           >
             Hefjum ævintýrið! 🚀
-          </Link>
+          </button>
         </div>
 
         <div className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
