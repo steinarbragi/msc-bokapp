@@ -6,11 +6,13 @@ import { Question, FormValues } from '../../app/spurningar/types';
 interface MultipleChoiceQuestionProps {
   question: Question;
   control: Control<FormValues>;
+  name: string;
 }
 
 export function MultipleChoiceQuestion({
   question,
   control,
+  name,
 }: MultipleChoiceQuestionProps) {
   return (
     <div>
@@ -23,7 +25,7 @@ export function MultipleChoiceQuestion({
         Þú getur valið fleiri en eitt svar!
       </motion.p>
       <Controller<FormValues>
-        name={`question${question.id}`}
+        name={name}
         control={control}
         defaultValue={[]}
         render={({ field }) => (

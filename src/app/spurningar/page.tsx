@@ -65,8 +65,8 @@ export default function Page() {
   const {
     setCoverDescription,
     setSurveyResponses,
-    setSessionId,
     setDescriptionId,
+    sessionId,
   } = useBook();
 
   return (
@@ -78,27 +78,8 @@ export default function Page() {
           setSurveyResponses(answers);
 
           try {
-            // First, get the session ID from the questions API
-            const questionsResponse = await fetch('/api/survey/questions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ surveyResponses: answers }),
-            });
-
-            if (!questionsResponse.ok) {
-              const errorText = await questionsResponse.text();
-              console.error('Questions API error:', errorText);
-              throw new Error('Failed to get session ID');
-            }
-
-            const questionsData = await questionsResponse.json();
-            const sessionId = questionsData.sessionId;
-            setSessionId(sessionId);
-
-            // Then, get the prompt with the session ID
-            const promptResponse = await fetch('/api/prompt', {
+            // Get the prompt with the session ID
+            const promptResponse = await fetch('/api/describe', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +97,7 @@ export default function Page() {
             }
 
             const promptData = await promptResponse.json();
-            setCoverDescription(promptData.coverDescription);
+            setCoverDescription(promptData.bookDescription.description);
             setDescriptionId(promptData.descriptionId);
 
             router.push('/leit');

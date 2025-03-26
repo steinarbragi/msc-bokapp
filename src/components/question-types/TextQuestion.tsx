@@ -1,15 +1,15 @@
 import { Control, Controller } from 'react-hook-form';
-import { Question, FormValues } from '../../app/spurningar/types';
+import { FormValues } from '../../app/spurningar/types';
 
 interface TextQuestionProps {
-  question: Question;
   control: Control<FormValues>;
+  name: string;
 }
 
-export function TextQuestion({ question, control }: TextQuestionProps) {
+export function TextQuestion({ control, name }: TextQuestionProps) {
   return (
     <Controller<FormValues>
-      name={`question${question.id}`}
+      name={name}
       control={control}
       render={({ field }) => (
         <input

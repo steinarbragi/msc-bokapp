@@ -6,16 +6,18 @@ interface SingleChoiceQuestionProps {
   question: Question;
   control: Control<FormValues>;
   onNextStep?: () => void;
+  name: string;
 }
 
 export function SingleChoiceQuestion({
   question,
   control,
   onNextStep,
+  name,
 }: SingleChoiceQuestionProps) {
   return (
     <Controller<FormValues>
-      name={`question${question.id}`}
+      name={name}
       control={control}
       render={({ field }) => (
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>

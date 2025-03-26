@@ -108,6 +108,13 @@ export default function SearchPage() {
 
     setIsProcessing(true);
     try {
+      console.log('Fetching recommendations with:', {
+        searchResults: results.length,
+        readBooks: Array.from(readBooks),
+        surveyResponses,
+        sessionId,
+      });
+
       const response = await fetch('/api/recommend', {
         method: 'POST',
         headers: {
@@ -126,6 +133,7 @@ export default function SearchPage() {
       }
 
       const data = await response.json();
+      console.log('Received recommendations:', data.recommendations);
       setRecommendations(data.recommendations);
     } catch (error) {
       console.error('Error getting recommendations:', error);

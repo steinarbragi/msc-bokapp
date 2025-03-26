@@ -15,10 +15,17 @@ export function QuestionContent({
   question,
   control,
   onNextStep,
+  name,
 }: QuestionContentProps) {
   switch (question.type) {
     case 'multiple-choice':
-      return <MultipleChoiceQuestion question={question} control={control} />;
+      return (
+        <MultipleChoiceQuestion
+          question={question}
+          control={control}
+          name={name}
+        />
+      );
 
     case 'single-choice':
       return (
@@ -26,11 +33,12 @@ export function QuestionContent({
           question={question}
           control={control}
           onNextStep={onNextStep}
+          name={name}
         />
       );
 
     case 'text':
-      return <TextQuestion question={question} control={control} />;
+      return <TextQuestion question={question} control={control} name={name} />;
 
     default:
       return null;

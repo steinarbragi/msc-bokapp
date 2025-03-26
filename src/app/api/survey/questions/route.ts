@@ -16,19 +16,25 @@ type AnthropicMessage = {
   content: string;
 };
 
-type Question = {
+interface Question {
+  id?: string;
   text: string;
-  id: string;
   type: 'single-choice' | 'multiple-choice';
   options: string[];
   allowTextInput?: boolean;
-};
+  key: string;
+}
 
-type ToolUseResponse = {
+interface SurveyResponse {
+  [key: string]: string | string[] | undefined;
+}
+
+interface ToolUseBlock {
+  type: 'tool_use';
   input: {
-    questions: Question[];
+    questions?: Question[];
   };
-};
+}
 
 // Helper function to make API call with retries
 async function createMessageWithRetry(
@@ -53,37 +59,30 @@ async function createMessageWithRetry(
               properties: {
                 questions: {
                   type: 'array',
-                  description: 'Listi af framhaldsspurningum',
+                  description: 'Array of follow-up questions',
                   items: {
                     type: 'object',
                     properties: {
                       text: {
                         type: 'string',
-                        description: 'Spurningartextinn',
-                      },
-                      id: {
-                        type: 'string',
-                        description:
-                          'descriptive hyphenated short identifier for the question',
+                        description: 'The question text in Icelandic',
                       },
                       type: {
                         type: 'string',
-                        enum: ['single-choice', 'multiple-choice'],
-                        description: 'Tegund spurningar',
+                        description:
+                          'The type of question (single-choice or multiple-choice)',
                       },
                       options: {
                         type: 'array',
-                        description: 'Svarmöguleikar fyrir spurninguna',
+                        description: 'Array of possible answers in Icelandic',
                         items: { type: 'string' },
-                        minItems: 3,
-                        maxItems: 8,
                       },
-                      allowTextInput: {
-                        type: 'boolean',
-                        description: 'Hvort leyfa eigi sérsniðinn texta',
+                      key: {
+                        type: 'string',
+                        description: 'Unique key for the question',
                       },
                     },
-                    required: ['id', 'text', 'type', 'options'],
+                    required: ['text', 'type', 'options', 'key'],
                   },
                 },
               },
@@ -92,89 +91,76 @@ async function createMessageWithRetry(
           },
         ],
       });
-    } catch (error: unknown) {
-      if (error instanceof Error && 'status' in error && error.status === 529) {
-        console.log(
-          `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error on model ${currentModel}, retrying...`
-        );
-
-        if (currentModel === 'claude-3-7-sonnet-latest') {
-          console.log('Switching to Haiku model...');
-          currentModel = 'claude-3-5-haiku-latest';
-          continue;
-        }
-
-        if (attempt === maxRetries - 1) {
-          throw error;
-        }
-        const delayTime = Math.pow(2, attempt) * 2000;
-        await delay(delayTime);
-        console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
-        continue;
+    } catch (error) {
+      if (attempt === maxRetries - 1) {
+        throw error;
       }
-      throw error;
+
+      // Keep haiku fallback logs
+      console.log('Switching to Haiku model...');
+      currentModel = 'claude-3-5-haiku-latest';
+      const delayTime = Math.pow(2, attempt) * 1000;
+      console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
+      await delay(delayTime);
     }
   }
-  throw new Error('Failed to create message after all retries');
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { surveyResponses } = body;
+    const { surveyResponses, sessionId } = body as {
+      surveyResponses: SurveyResponse;
+      sessionId: string;
+    };
+
+    if (!sessionId) {
+      console.error('No session ID provided');
+      return NextResponse.json(
+        { error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
 
     const sql = neon(process.env.DATABASE_URL!);
 
-    // Create a new session
-    const sessionResult = await sql`
-      INSERT INTO survey_sessions (id) 
-      VALUES (gen_random_uuid()) 
-      RETURNING id
-    `;
-    const sessionId = sessionResult[0].id;
-
-    // Store pre-generation survey responses
-    for (const [questionKey, response] of Object.entries(surveyResponses)) {
-      await sql`
-        INSERT INTO pre_generation_responses (session_id, question_key, response)
-        VALUES (${sessionId}, ${questionKey}, ${response})
-      `;
-    }
-
-    // Get follow-up questions based on responses
+    // Get questions based on responses
     const response = await createMessageWithRetry([
       {
         role: 'user',
         content: `Based on these survey responses: ${JSON.stringify(surveyResponses, null, 2)}
 
-Generate 3 follow-up questions to help customize the story further. Each question should:
-- Have a unique ID (e.g., 'question1', 'question2', etc.)
-- Have clear text in Icelandic
-- Be either single-choice or multiple-choice
-- Have 3-8 options in Icelandic
-- Optionally allow text input (default to false)
+Generate follow-up questions to better understand the user's preferences. The questions should:
+- Be in Icelandic
+- Be appropriate for children aged 6-11
+- Be clear and engaging
+- Have 2-5 options each
+- Include a mix of single-choice and multiple-choice questions
+- Have unique keys for each question
 
-Make sure the questions are relevant to the user's previous responses and help narrow down their preferences for the story.`,
+Make sure the questions are engaging and help understand the user's interests better.`,
       },
     ]);
 
-    // Extract questions from the response
-    let questions: Question[] = [];
-    for (const block of response.content) {
-      if (block.type === 'tool_use') {
-        const toolUse = block as unknown as ToolUseResponse;
-        if (toolUse.input?.questions) {
-          questions = toolUse.input.questions;
-          break;
+    // Process each block in the response
+    let questions: Question[] | null = null;
+    if (response?.content) {
+      for (const block of response.content) {
+        if (block.type === 'tool_use' && 'input' in block) {
+          const toolUseBlock = block as ToolUseBlock;
+          if (toolUseBlock.input?.questions) {
+            questions = toolUseBlock.input.questions;
+            break;
+          }
         }
       }
     }
 
-    // If no questions found, use fallbacks
+    // Keep fallback log
     if (!questions || questions.length === 0) {
+      console.log('No valid questions found, using fallbacks');
       questions = [
         {
-          id: 'fallback1',
           text: 'Hvaða tegund af sögu myndir þú vilja lesa?',
           type: 'single-choice',
           options: [
@@ -184,10 +170,9 @@ Make sure the questions are relevant to the user's previous responses and help n
             'Vísindaskáldskapur',
             'Fantasía',
           ],
-          allowTextInput: false,
+          key: 'fallback-story-type',
         },
         {
-          id: 'fallback2',
           text: 'Hversu löng ætti sagan að vera?',
           type: 'single-choice',
           options: [
@@ -195,27 +180,28 @@ Make sure the questions are relevant to the user's previous responses and help n
             'Miðlungs (10-20 mínútur)',
             'Löng saga (yfir 20 mínútur)',
           ],
-          allowTextInput: false,
-        },
-        {
-          id: 'fallback3',
-          text: 'Hvað er mikilvægast í góðri sögu að þínu mati?',
-          type: 'multiple-choice',
-          options: [
-            'Áhugaverðir persónuleikar',
-            'Spennandi söguþráður',
-            'Góður endi',
-            'Óvæntar vendingar',
-            'Falleg lýsing á umhverfi',
-          ],
-          allowTextInput: true,
+          key: 'fallback-story-length',
         },
       ];
     }
 
+    // Store the questions in the database
+    if (questions) {
+      try {
+        for (const question of questions) {
+          await sql`
+            INSERT INTO question_responses (session_id, question_key, response)
+            VALUES (${sessionId}, ${question.key}, ${JSON.stringify(question)})
+          `;
+        }
+      } catch (error) {
+        console.error('Error storing questions:', error);
+        throw error;
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      sessionId,
       questions,
     });
   } catch (error) {

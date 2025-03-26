@@ -30,45 +30,77 @@ async function createMessageWithRetry(
   messages: AnthropicMessage[],
   maxRetries = 3
 ) {
-  let currentModel = 'claude-3-5-sonnet-latest';
+  let currentModel = 'claude-3-7-sonnet-latest';
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      return await anthropic.messages.create({
-        messages,
+      console.log('Attempting to create message with model:', currentModel);
+      const response = await anthropic.messages.create({
         model: currentModel,
-        max_tokens: 1000,
+        max_tokens: 4000,
+        messages,
+        tools: [
+          {
+            name: 'generate_recommendations',
+            description:
+              'Generate personalized book recommendations based on survey responses and read books',
+            input_schema: {
+              type: 'object',
+              properties: {
+                recommendations: {
+                  type: 'array',
+                  description: 'Array of book recommendations',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      title: {
+                        type: 'string',
+                        description:
+                          'The exact title of the book as it appears in the unreadBooks list',
+                      },
+                      reasoning: {
+                        type: 'string',
+                        description:
+                          'A two-sentence explanation in Icelandic for why this book is recommended, speaking directly to the user',
+                      },
+                    },
+                    required: ['title', 'reasoning'],
+                  },
+                },
+              },
+              required: ['recommendations'],
+            },
+          },
+        ],
       });
-    } catch (error: unknown) {
-      if (error instanceof Error && 'status' in error && error.status === 529) {
-        console.log(
-          `Attempt ${attempt + 1} of ${maxRetries} failed with overloaded error on model ${currentModel}, retrying...`
-        );
-
-        if (currentModel === 'claude-3-5-sonnet-latest') {
-          console.log('Switching to Haiku model...');
-          currentModel = 'claude-3-5-haiku-latest';
-          continue;
-        }
-
-        if (attempt === maxRetries - 1) {
-          throw error;
-        }
-        const delayTime = Math.pow(2, attempt) * 2000;
-        console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
-        await delay(delayTime);
-        continue;
+      console.log('Received response from Claude:', response);
+      return response;
+    } catch (error) {
+      console.error('Error in createMessageWithRetry:', error);
+      if (attempt === maxRetries - 1) {
+        throw error;
       }
-      throw error;
+
+      console.log('Switching to Haiku model...');
+      currentModel = 'claude-3-haiku-20240307';
+      const delayTime = Math.pow(2, attempt) * 1000;
+      console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
+      await delay(delayTime);
     }
   }
-  throw new Error('Failed to create message after all retries');
 }
 
 export async function POST(req: Request) {
   try {
     const { searchResults, readBooks, surveyResponses, sessionId } =
       await req.json();
+
+    console.log('Received request with:', {
+      searchResultsCount: searchResults.length,
+      readBooksCount: readBooks.length,
+      surveyResponses,
+      sessionId,
+    });
 
     if (!sessionId) {
       return NextResponse.json(
@@ -112,64 +144,75 @@ export async function POST(req: Request) {
       (book: Book) => !readBooks.includes(book.id)
     );
 
+    console.log('Unread books count:', unreadBooks.length);
+
     // Prepare the prompt for Claude
     const prompt = `Þú ert bókmenntafræðingur sem sérhæfir þig í að mæla með bókum.
 
-Hér eru svör notandans við spurningum um lestrarvenjur og áhugamál:
+Notandinn hefur svarað þessum spurningum:
 ${Object.entries(surveyResponses || {})
   .map(([key, value]) => `- ${key}: ${value}`)
   .join('\n')}
     
 Hér er listi af bókum sem notandi hefur ekki lesið:
-${unreadBooks.map((book: Book) => `- ${book.metadata.title}: ${book.metadata.description}`).join('\n')}
+${unreadBooks.map((book: Book) => `- ${book.metadata.title}`).join('\n')}
 
 Veldu 10 bestu bækurnar úr listanum fyrir þennan notanda. Fyrir hverja bók skaltu útskýra í tveimur málsgreinum af hverju þú telur að bókin henti notandanum vel, með því að tala beint við notandann (t.d. "Þessi bók mun heilla þig..."). Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál.
 
-Svarið þarf að vera á forminu:
-1. [Titill bókar]: [Útskýring í tveimur málsgreinum sem talar beint til notandans]
-2. [Titill bókar]: [Útskýring í tveimur málsgreinum sem talar beint til notandans]
-osf.
+Mikilvægt: 
+1. Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þennan notanda
+2. Notaðu nákvæmlega sama titil og bókin hefur í listanum
+3. Skrifaðu útskýringar sem tala beint til notandans
+4. Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál`;
 
-Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þennan notanda, með tilliti til þeirra svara sem hann gaf.`;
-
+    console.log('Sending prompt to Claude');
     const completion = await createMessageWithRetry([
       { role: 'user', content: prompt },
     ]);
 
-    const recommendations =
-      'text' in completion.content[0] ? completion.content[0].text : '';
+    console.log('Received completion from Claude:', completion);
 
-    // Extract book titles in order from the recommendations
-    const orderedTitles = recommendations
-      .split('\n')
-      .filter(line => line.trim())
-      .map(line =>
-        line
-          .split(':')[0]
-          .trim()
-          .replace(/^\d+\.\s*/, '')
-          .replace(/^"|"$/g, '')
-      );
+    // Extract recommendations from the tool use response
+    let recommendations: { title: string; reasoning: string }[] = [];
+    if (completion?.content) {
+      for (const block of completion.content) {
+        if (block.type === 'tool_use' && 'input' in block) {
+          const toolUseBlock = block as {
+            input: { recommendations: { title: string; reasoning: string }[] };
+          };
+          if (toolUseBlock.input?.recommendations) {
+            recommendations = toolUseBlock.input.recommendations;
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('Extracted recommendations:', recommendations);
 
     // Match the recommendations with the full book data and reorder based on the titles
     const recommendedBooks = await Promise.all(
-      orderedTitles.map(async (title, index) => {
+      recommendations.map(async (rec, index) => {
         // Find the book in unreadBooks
-        const book = unreadBooks.find((b: Book) => b.metadata.title === title);
+        const book = unreadBooks.find(
+          (b: Book) => b.metadata.title === rec.title
+        );
 
         if (!book || !book.metadata) {
+          console.log('No book found for title:', rec.title);
           return null;
         }
 
         if (!book.id) {
+          console.log('Book found but no ID:', rec.title);
           return null;
         }
 
-        const reasoning =
-          recommendations
-            .split('\n')
-            .find(line => line.includes(title))
-            ?.split(': ')[1] || 'Engin útskýring tiltæk';
+        console.log('Found book with reasoning:', {
+          title: rec.title,
+          reasoning: rec.reasoning,
+          bookId: book.id,
+        });
 
         // Store recommendation in database
         try {
@@ -177,7 +220,7 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
             INSERT INTO recommendations 
             (session_id, book_id, reasoning, rank_position)
             VALUES 
-            (${sessionId}, ${book.id}, ${reasoning}, ${index + 1})
+            (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1})
           `;
         } catch (dbError: unknown) {
           const error = dbError as {
@@ -193,15 +236,20 @@ Mikilvægt: Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þen
 
         return {
           ...book,
-          reasoning,
+          reasoning: rec.reasoning,
         };
       })
     );
+
+    console.log('Final recommended books:', recommendedBooks);
 
     // Filter out any null values before returning
     const validRecommendations = recommendedBooks.filter(
       (book): book is Book & { reasoning: string } => book !== null
     );
+
+    console.log('Valid recommendations to return:', validRecommendations);
+
     return NextResponse.json({ recommendations: validRecommendations });
   } catch (error) {
     console.error('Error in recommend route:', error);

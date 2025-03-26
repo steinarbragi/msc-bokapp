@@ -11,6 +11,7 @@ import { NavigationButtons } from '@/components/NavigationButtons';
 import Loader from '@/components/loader';
 import Link from 'next/link';
 import { useQuestionContext } from './QuestionContext';
+import { useBook } from '../context/BookContext';
 
 interface SurveyProps {
   questions: Question[];
@@ -33,6 +34,8 @@ export default function Questions({
     isLoadingMore,
     setIsLoadingMore,
   } = useQuestionContext();
+
+  const { sessionId } = useBook();
 
   const { control, watch } = useForm<FormValues>({
     defaultValues: {},
@@ -72,13 +75,10 @@ export default function Questions({
         return;
       }
 
+      // Include all answers, not just those from initial questions
       const transformedAnswers = Object.entries(data).reduce(
         (acc, [key, value]) => {
-          const questionIndex = parseInt(key.replace(/\D/g, ''), 10) - 1;
-          if (questionIndex >= 0 && questionIndex < questions.length) {
-            const questionKey = questions[questionIndex].key;
-            acc[questionKey] = value;
-          }
+          acc[key] = value;
           return acc;
         },
         {} as Record<string, string | string[]>
@@ -119,27 +119,39 @@ export default function Questions({
   const generateMoreQuestions = async () => {
     if (isLoadingMore) return;
 
+    if (!sessionId) {
+      console.error('No session ID available');
+      return;
+    }
+
     try {
       setIsLoadingMore(true);
 
       const transformedAnswers = Object.entries(formAnswers).reduce(
         (acc, [key, value]) => {
-          const questionIndex = parseInt(key.replace(/\D/g, ''), 10) - 1;
-          if (questionIndex >= 0 && questionIndex < questions.length) {
-            const questionKey = questions[questionIndex].key;
-            acc[questionKey] = value;
-          }
+          // Include all answers, not just those with matching question keys
+          acc[key] = value;
           return acc;
         },
         {} as Record<string, string | string[]>
       );
 
+      // Keep this log for debugging API requests
+      console.log('Sending to API:', {
+        sessionId,
+        surveyResponses: transformedAnswers,
+      });
+
+      // Store all answers in question_responses
       const response = await fetch('/api/survey/questions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ surveyResponses: transformedAnswers }),
+        body: JSON.stringify({
+          surveyResponses: transformedAnswers,
+          sessionId,
+        }),
       });
 
       if (!response.ok) {
@@ -163,7 +175,7 @@ export default function Questions({
         );
 
         if (validQuestions.length === 0) {
-          // Remove these debug logs:
+          // Remove debug log
           // console.log('No valid questions found in response:', data);
           const fallbackQuestions = [
             {
@@ -178,7 +190,7 @@ export default function Questions({
                 'Fantasía',
               ],
               allowTextInput: false,
-              key: 'fallback1',
+              key: 'fallback-story-type',
             },
             {
               id: questions.length + 2,
@@ -190,7 +202,7 @@ export default function Questions({
                 'Löng saga (yfir 20 mínútur)',
               ],
               allowTextInput: false,
-              key: 'fallback2',
+              key: 'fallback-story-length',
             },
           ] as Question[];
 
@@ -205,7 +217,7 @@ export default function Questions({
           (q: Question, index: number) => ({
             ...q,
             id: questions.length + index + 1,
-            key: q.key || `question${questions.length + index + 1}`,
+            key: q.key || `generated-question-${index + 1}`,
             type: q.type || 'single-choice',
           })
         ) as Question[];
@@ -323,7 +335,7 @@ export default function Questions({
               isLastQuestion={isLastQuestion}
               isComplete={isComplete}
               isLoading={isLoading || isLoadingMore}
-              currentAnswer={watch(`question${currentQuestion.id}`)}
+              currentAnswer={watch(currentQuestion.key)}
               onNextStep={
                 isLastInitialQuestion && !hasGeneratedQuestions
                   ? generateMoreQuestions
