@@ -34,9 +34,9 @@ export default function TermsPage() {
           <p className='text-gray-700'>
             Bókavélin er rannsóknarverkefni sem miðar að því að auka
             lestraráhuga barna með hjálp gervigreindar. Gögnin sem safnast verða
-            nýtt til að meta gæði gervigreindarlíks og niðurstöður verkefnisins
-            munu nýtast í rannsóknir á lestrarvenjum og þróun betri aðferða til
-            að mæla með bókum.
+            nýtt til að meta gæði mállíkans og niðurstöður verkefnisins munu
+            nýtast í rannsóknir á lestrarvenjum og þróun betri aðferða til að
+            mæla með bókum.
           </p>
         </section>
 
