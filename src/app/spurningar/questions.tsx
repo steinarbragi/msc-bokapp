@@ -253,7 +253,9 @@ export default function Questions({
     return (
       <div className='flex min-h-screen flex-col items-center justify-center pb-48'>
         <Loader />
-        <p className='pt-5 text-center text-lg'>Bókavélin er að hugsa</p>
+        <p className='pt-5 text-center text-lg'>
+          Bókavélin er að leita að bókum. Þetta gæti tekið smá tíma.
+        </p>
       </div>
     );
   }

@@ -158,13 +158,8 @@ export default function SearchPage() {
     <div className='mx-auto max-w-4xl'>
       <div className='mb-2 flex items-center justify-between'>
         <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
-          Bókaleit
+          Bókavélin
         </h1>
-        <Link href='/'>
-          <button className='mb-4 rounded-xl border-2 border-purple-300 bg-purple-50 px-4 py-2 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'>
-            Aftur á forsíðu
-          </button>
-        </Link>
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
         {error && (
@@ -173,13 +168,21 @@ export default function SearchPage() {
           </div>
         )}
 
-        {isLoading ? (
-          <div className='text-center text-lg text-gray-600'>
-            Leita að bókum...
+        {isLoading && !isProcessing ? (
+          <div className='inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'>
+            <Loader className='h-8 w-8 animate-spin text-purple-600' />
+            <p className='mt-4 text-center text-lg text-gray-600'>
+              Bókavélin er að leita að bókum sem gætu passað fyrir þig. Þetta
+              eru ekki endanleg meðmæli, þú færð þau í næsta skrefi.
+            </p>
           </div>
         ) : isProcessing ? (
-          <div className='flex justify-center'>
+          <div className='inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'>
             <Loader className='h-8 w-8 animate-spin text-purple-600' />
+            <p className='mt-4 text-center text-lg text-gray-600'>
+              Bókavélin er að vinna úr þínu vali og býr nú til persónuleg
+              bókameðmæli. Þetta gæti tekið smá tíma.
+            </p>
           </div>
         ) : (
           <>
@@ -188,9 +191,15 @@ export default function SearchPage() {
                 <>
                   {results.length > 0 && recommendations.length === 0 && (
                     <div>
-                      <h2 className='mb-4 text-2xl font-semibold text-gray-600'>
+                      <h2 className='mb-4 text-2xl font-bold text-purple-800'>
                         Hefurðu lesið einhverjar af þessum bókum?
                       </h2>
+                      <p className='mb-4 rounded-lg bg-purple-50 p-4 text-gray-600'>
+                        Þetta eru ekki endanleg meðmæli, þú færð þau í næsta
+                        skrefi. Nú getur þú merkt við þær bækur sem þú hefur
+                        þegar lesið. Svo getur þú smellt á hnappinn neðst á
+                        síðunni til þess að fá persónuleg bókameðmæli.
+                      </p>
                       <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
                         {results.map((book, index) => (
                           <div
@@ -253,7 +262,7 @@ export default function SearchPage() {
                     <div>
                       <div className='mb-4 flex items-center justify-between'>
                         <h2 className='text-2xl font-bold text-purple-800'>
-                          Tillögur að nýjum bókum
+                          Bókameðmæli
                         </h2>
                         <button
                           onClick={() => setRecommendations([])}
