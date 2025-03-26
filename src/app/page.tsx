@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useBook } from './context/BookContext';
-
+import { motion } from 'framer-motion';
 export default function Home() {
   const { setSessionId } = useBook();
   const router = useRouter();
@@ -82,12 +82,36 @@ export default function Home() {
         </div>
 
         <div className='flex justify-center'>
-          <button
+          <motion.button
             onClick={handleStart}
-            className='inline-block animate-pulse rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:px-8'
+            animate={{
+              background: [
+                'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+                'linear-gradient(to right, #2563eb, #9333ea, #f97316)',
+                'linear-gradient(to right, #9333ea, #f97316, #2563eb)',
+                'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+              ],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              repeatType: 'loop',
+            }}
+            whileHover={{
+              scale: 1.1,
+              boxShadow:
+                '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+            }}
+            whileTap={{
+              scale: 0.95,
+              boxShadow:
+                '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            }}
+            className='flex items-center gap-2 rounded-full px-6 py-4 text-xl font-bold text-white shadow-xl transition-all hover:brightness-110 active:brightness-90'
           >
             Hefjum ævintýrið! 🚀
-          </button>
+          </motion.button>
         </div>
 
         <div className='mt-8 rounded-xl bg-purple-50 p-4 text-base text-gray-600'>
