@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useBook } from '../context/BookContext';
+import { motion } from 'framer-motion';
 
 interface BookMetadata {
   title: string;
@@ -18,6 +19,8 @@ interface SearchResult {
   id: string;
   score: number;
 }
+
+const MotionLink = motion(Link);
 
 export default function SearchPage() {
   const { coverDescription, surveyResponses, sessionId, descriptionId } =
@@ -307,33 +310,61 @@ export default function SearchPage() {
           </>
         )}
       </div>
-      {results.length > 0 &&
-        readBooks.size > 0 &&
-        recommendations.length === 0 && (
-          <button
-            onClick={getRecommendations}
-            disabled={isProcessing}
-            className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full bg-purple-600 px-6 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-purple-700 disabled:bg-gray-400'
-          >
-            {isProcessing ? (
-              <Loader className='animate-spin' />
-            ) : (
-              <>
-                <span>Fá tillögur að nýjum bókum</span>
-                <span className='flex h-6 w-6 items-center justify-center rounded-full bg-white text-sm text-purple-600'>
-                  {readBooks.size}
-                </span>
-              </>
-            )}
-          </button>
-        )}
+      {results.length > 0 && recommendations.length === 0 && (
+        <motion.button
+          onClick={getRecommendations}
+          disabled={isProcessing}
+          animate={{
+            background: [
+              'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+              'linear-gradient(to right, #2563eb, #9333ea, #f97316)',
+              'linear-gradient(to right, #9333ea, #f97316, #2563eb)',
+              'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+            ],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            repeatType: 'loop',
+          }}
+          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl disabled:bg-gray-400'
+        >
+          {isProcessing ? (
+            <Loader className='animate-spin' />
+          ) : (
+            <>
+              <span>✨</span>
+              <span>Vista lesnar bækur og meðmæli frá bókavélinni</span>
+              <span className='flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-purple-600 shadow-inner'>
+                {readBooks.size}
+              </span>
+              <span>✨</span>
+            </>
+          )}
+        </motion.button>
+      )}
       {recommendations.length > 0 && (
-        <Link
+        <MotionLink
           href='/spurningar/konnun'
-          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full bg-purple-600 px-6 py-3 text-white shadow-lg transition-all hover:scale-105 hover:bg-purple-700'
+          animate={{
+            background: [
+              'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+              'linear-gradient(to right, #2563eb, #9333ea, #f97316)',
+              'linear-gradient(to right, #9333ea, #f97316, #2563eb)',
+              'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
+            ],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            repeatType: 'loop',
+          }}
+          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl'
         >
           <span>Svara stuttri könnun um vefsíðuna</span>
-        </Link>
+        </MotionLink>
       )}
     </div>
   );
