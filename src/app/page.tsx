@@ -95,14 +95,15 @@ export default function Home() {
             Vefurinn er enn í stöðugri þróun. Kerfið er ætlað börnum á aldrinum
             6-11 ára. Markmiðið er að kanna getu gervigreindar til þess auka
             lestraráhuga barna með því að veita persónuleg bókameðmæli. Gögnum
-            verður safnað fyrir rannsóknarverkefni á vegum Háskóla Íslands.
+            verður safnað nafnlaust fyrir rannsóknarverkefni á vegum Háskóla
+            Íslands.
           </p>
           <p className='mt-2'>
             <Link
               className='text-center font-bold text-blue-900 transition-colors hover:text-blue-700'
               href='/skilmalar'
             >
-              Skilmálar og persónuverndarstefna
+              skilmálar og persónuverndarstefna
             </Link>
           </p>
         </div>
