@@ -73,7 +73,6 @@ async function createMessageWithRetry(
           },
         ],
       });
-      console.log('Received response from Claude:', response);
       return response;
     } catch (error) {
       console.error('Error in createMessageWithRetry:', error);
@@ -94,13 +93,6 @@ export async function POST(req: Request) {
   try {
     const { searchResults, readBooks, surveyResponses, sessionId } =
       await req.json();
-
-    console.log('Received request with:', {
-      searchResultsCount: searchResults.length,
-      readBooksCount: readBooks.length,
-      surveyResponses,
-      sessionId,
-    });
 
     if (!sessionId) {
       return NextResponse.json(
@@ -169,9 +161,6 @@ Mikilvægt:
     const completion = await createMessageWithRetry([
       { role: 'user', content: prompt },
     ]);
-
-    console.log('Received completion from Claude:', completion);
-
     // Extract recommendations from the tool use response
     let recommendations: { title: string; reasoning: string }[] = [];
     if (completion?.content) {
@@ -187,9 +176,6 @@ Mikilvægt:
         }
       }
     }
-
-    console.log('Extracted recommendations:', recommendations);
-
     // Match the recommendations with the full book data and reorder based on the titles
     const recommendedBooks = await Promise.all(
       recommendations.map(async (rec, index) => {
@@ -207,12 +193,6 @@ Mikilvægt:
           console.log('Book found but no ID:', rec.title);
           return null;
         }
-
-        console.log('Found book with reasoning:', {
-          title: rec.title,
-          reasoning: rec.reasoning,
-          bookId: book.id,
-        });
 
         // Store recommendation in database
         try {
@@ -240,15 +220,10 @@ Mikilvægt:
         };
       })
     );
-
-    console.log('Final recommended books:', recommendedBooks);
-
     // Filter out any null values before returning
     const validRecommendations = recommendedBooks.filter(
       (book): book is Book & { reasoning: string } => book !== null
     );
-
-    console.log('Valid recommendations to return:', validRecommendations);
 
     return NextResponse.json({ recommendations: validRecommendations });
   } catch (error) {

@@ -38,7 +38,7 @@ export function QuestionContent({
       );
 
     case 'text':
-      return <TextQuestion question={question} control={control} name={name} />;
+      return <TextQuestion control={control} name={name} />;
 
     default:
       return null;
