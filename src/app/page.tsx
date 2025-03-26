@@ -98,7 +98,10 @@ export default function Home() {
             verður safnað fyrir rannsóknarverkefni á vegum Háskóla Íslands.
           </p>
           <p className='mt-2'>
-            <Link className='text-blue-900' href='/skilmalar'>
+            <Link
+              className='text-center font-bold text-blue-900 transition-colors hover:text-blue-700'
+              href='/skilmalar'
+            >
               Skilmálar og persónuverndarstefna
             </Link>
           </p>
