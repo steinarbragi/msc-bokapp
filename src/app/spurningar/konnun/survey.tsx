@@ -97,12 +97,6 @@ export default function Survey({
             answers={answers}
             onStepClick={setCurrentStep}
           />
-
-          <Link href='/'>
-            <button className='rounded-xl border-2 border-purple-300 bg-purple-50 px-4 py-2 text-center text-purple-700 transition-all hover:scale-105 hover:border-purple-400 hover:bg-purple-100'>
-              Aftur á forsíðu
-            </button>
-          </Link>
         </div>
 
         <AnimatePresence mode='wait'>
