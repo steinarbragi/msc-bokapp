@@ -13,10 +13,14 @@ export function StepButtons({
   answers,
   onStepClick,
 }: StepButtonsProps) {
-  const isAnswered = (questionId: string) => {
-    const answer = answers[`question${questionId}`];
+  const isAnswered = (questionKey: string) => {
+    const answer = answers[questionKey];
+    if (answer === undefined || answer === null) return false;
     if (Array.isArray(answer)) {
       return answer.length > 0;
+    }
+    if (typeof answer === 'string') {
+      return answer.trim() !== '';
     }
     return !!answer;
   };
@@ -31,7 +35,7 @@ export function StepButtons({
           className={`h-8 w-8 rounded-full ${
             index === currentStep
               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-              : isAnswered(question.id.toString())
+              : isAnswered(question.key)
                 ? 'bg-purple-500 text-white'
                 : index < currentStep
                   ? 'bg-white/80 text-purple-600'
