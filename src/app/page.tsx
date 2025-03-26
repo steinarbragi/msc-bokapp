@@ -3,33 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useBook } from './context/BookContext';
-import { useEffect } from 'react';
 
 export default function Home() {
   const { setSessionId } = useBook();
   const router = useRouter();
-
-  useEffect(() => {
-    const initSession = async () => {
-      try {
-        const response = await fetch('/api/survey/init', {
-          method: 'POST',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to initialize session');
-        }
-
-        const data = await response.json();
-        setSessionId(data.sessionId);
-      } catch (error) {
-        console.error('Error initializing session:', error);
-      }
-    };
-
-    initSession();
-  }, [setSessionId]);
-
   const handleStart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent the default link behavior
 
