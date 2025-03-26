@@ -328,14 +328,14 @@ export default function SearchPage() {
             ease: 'easeInOut',
             repeatType: 'loop',
           }}
-          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl disabled:bg-gray-400'
+          className='fixed bottom-8 right-8 z-50 ml-8 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl disabled:bg-gray-400'
         >
           {isProcessing ? (
             <Loader className='animate-spin' />
           ) : (
             <>
               <span>✨</span>
-              <span>Vista lesnar bækur og meðmæli frá bókavélinni</span>
+              <span>Vista lesnar bækur og fá meðmæli frá bókavélinni</span>
               <span className='flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-purple-600 shadow-inner'>
                 {readBooks.size}
               </span>
@@ -361,9 +361,9 @@ export default function SearchPage() {
             ease: 'easeInOut',
             repeatType: 'loop',
           }}
-          className='fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl'
+          className='fixed bottom-8 right-8 z-50 ml-8 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl'
         >
-          <span>Svara stuttri könnun um vefsíðuna</span>
+          <span className='text-center'>Svara stuttri könnun um vefsíðuna</span>
         </MotionLink>
       )}
     </div>
