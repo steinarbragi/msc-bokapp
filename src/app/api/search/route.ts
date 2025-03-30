@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         cleanAge && cleanAge !== 'Fullorðinn að prófa'
           ? {
               age_group: {
-                $contains: cleanAge,
+                $in: [cleanAge],
               },
             }
           : undefined,
