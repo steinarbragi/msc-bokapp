@@ -29,7 +29,7 @@ type Book = {
 async function createMessageWithRetry(
   messages: AnthropicMessage[],
   maxRetries = 3
-) {
+): Promise<{ response: Anthropic.Message; model: string }> {
   let currentModel = 'claude-3-7-sonnet-latest';
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -73,7 +73,7 @@ async function createMessageWithRetry(
           },
         ],
       });
-      return response;
+      return { response, model: currentModel };
     } catch (error) {
       console.error('Error in createMessageWithRetry:', error);
       if (attempt === maxRetries - 1) {
@@ -81,12 +81,13 @@ async function createMessageWithRetry(
       }
 
       console.log('Switching to Haiku model...');
-      currentModel = 'claude-3-haiku-20240307';
+      currentModel = 'claude-3-haiku-latest';
       const delayTime = Math.pow(2, attempt) * 1000;
       console.log(`Waiting ${delayTime / 1000} seconds before retry...`);
       await delay(delayTime);
     }
   }
+  throw new Error('Failed to create message after all retries');
 }
 
 export async function POST(req: Request) {
@@ -158,9 +159,8 @@ Mikilvægt:
 4. Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál`;
 
     console.log('Sending prompt to Claude');
-    const completion = await createMessageWithRetry([
-      { role: 'user', content: prompt },
-    ]);
+    const { response: completion, model: currentModel } =
+      await createMessageWithRetry([{ role: 'user', content: prompt }]);
     // Extract recommendations from the tool use response
     let recommendations: { title: string; reasoning: string }[] = [];
     if (completion?.content) {
@@ -198,9 +198,9 @@ Mikilvægt:
         try {
           await sql`
             INSERT INTO recommendations 
-            (session_id, book_id, reasoning, rank_position)
+            (session_id, book_id, reasoning, rank_position, model)
             VALUES 
-            (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1})
+            (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
           `;
         } catch (dbError: unknown) {
           const error = dbError as {

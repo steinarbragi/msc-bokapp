@@ -40,12 +40,12 @@ interface ToolUseBlock {
 async function createMessageWithRetry(
   messages: AnthropicMessage[],
   maxRetries = 3
-) {
+): Promise<{ response: Anthropic.Message; model: string }> {
   let currentModel = 'claude-3-7-sonnet-latest';
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      return await anthropic.messages.create({
+      const response = await anthropic.messages.create({
         model: currentModel,
         max_tokens: 1000,
         messages,
@@ -91,6 +91,7 @@ async function createMessageWithRetry(
           },
         ],
       });
+      return { response, model: currentModel };
     } catch (error) {
       if (attempt === maxRetries - 1) {
         throw error;
@@ -104,6 +105,7 @@ async function createMessageWithRetry(
       await delay(delayTime);
     }
   }
+  throw new Error('Failed to create message after all retries');
 }
 
 export async function POST(request: Request) {
@@ -125,7 +127,7 @@ export async function POST(request: Request) {
     const sql = neon(process.env.DATABASE_URL!);
 
     // Get questions based on responses
-    const response = await createMessageWithRetry([
+    const { response, model: currentModel } = await createMessageWithRetry([
       {
         role: 'user',
         content: `Based on these survey responses: ${JSON.stringify(surveyResponses, null, 2)}
@@ -190,8 +192,8 @@ Make sure the questions are engaging and help understand the user's interests be
       try {
         for (const question of questions) {
           await sql`
-            INSERT INTO generated_questions (session_id, question, question_key, options)
-            VALUES (${sessionId}, ${question.text}, ${question.key}, ${question.options}::text[])
+            INSERT INTO generated_questions (session_id, question, question_key, options, model)
+            VALUES (${sessionId}, ${question.text}, ${question.key}, ${question.options}::text[], ${currentModel})
           `;
         }
       } catch (error) {

@@ -43,12 +43,12 @@ interface ToolUseBlock {
 async function createMessageWithRetry(
   messages: AnthropicMessage[],
   maxRetries = 3
-) {
+): Promise<{ response: Anthropic.Message; model: string }> {
   let currentModel = 'claude-3-7-sonnet-latest';
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      return await anthropic.messages.create({
+      const response = await anthropic.messages.create({
         model: currentModel,
         max_tokens: 1000,
         messages,
@@ -94,6 +94,7 @@ async function createMessageWithRetry(
           },
         ],
       });
+      return { response, model: currentModel };
     } catch (error) {
       if (attempt === maxRetries - 1) {
         throw error;
@@ -107,6 +108,7 @@ async function createMessageWithRetry(
       await delay(delayTime);
     }
   }
+  throw new Error('Failed to create message after all retries');
 }
 
 export async function POST(request: Request) {
@@ -167,7 +169,7 @@ export async function POST(request: Request) {
       .join('\n');
 
     // Get book description based on responses
-    const response = await createMessageWithRetry([
+    const { response, model: currentModel } = await createMessageWithRetry([
       {
         role: 'user',
         content: `Based on these survey responses: ${preferences}
@@ -230,11 +232,13 @@ Make sure the description is engaging and matches the user's interests and prefe
         INSERT INTO generated_descriptions (
           id,
           session_id,
-          description_text
+          description_text,
+          model
         ) VALUES (
           ${descriptionId},
           ${sessionId},
-          ${JSON.stringify(bookDescription)}
+          ${JSON.stringify(bookDescription)},
+          ${currentModel}
         )
       `;
     } catch (error) {
