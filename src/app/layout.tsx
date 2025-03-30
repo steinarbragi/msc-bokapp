@@ -17,6 +17,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Bókavélin',
   description: 'Gervigreind sem hjálpar börnum að finna bækur',
+  openGraph: {
+    images: '/bokavel-meta.jpg',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: '/bokavel-meta.jpg',
+  },
 };
 
 export default function RootLayout({
