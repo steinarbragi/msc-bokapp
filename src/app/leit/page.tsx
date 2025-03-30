@@ -71,6 +71,7 @@ export default function SearchPage() {
           topK: 50,
           sessionId,
           descriptionId,
+          age: surveyResponses ? surveyResponses['reader-age'] : null,
         }),
       });
 
@@ -92,7 +93,7 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [coverDescription, sessionId, descriptionId]);
+  }, [coverDescription, sessionId, descriptionId, surveyResponses]);
 
   const toggleReadStatus = (bookId: string) => {
     setReadBooks(prev => {

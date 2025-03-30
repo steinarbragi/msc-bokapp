@@ -15,7 +15,7 @@ const initialQuestions: Question[] = [
     options: [
       '0-5 ára 🌱',
       '6-12 ára 🌿',
-      '13 ára eða eldri 🌳',
+      '13 ára og eldri 🌳',
       'Fullorðinn að prófa 👨🏻‍💻',
     ],
   },
