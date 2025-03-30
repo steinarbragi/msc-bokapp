@@ -8,11 +8,22 @@ CREATE TABLE survey_sessions (
 CREATE TABLE question_responses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES survey_sessions(id),
+    question TEXT NOT NULL,
     question_key TEXT NOT NULL,
     response TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(session_id, question_key)
 );
+
+-- Table to store generated questions
+CREATE TABLE generated_questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID REFERENCES survey_sessions(id),
+    question TEXT NOT NULL,
+    options TEXT[] NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- Table to store post-generation survey responses 
 CREATE TABLE survey_responses (
