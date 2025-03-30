@@ -21,7 +21,7 @@ type Book = {
   metadata: {
     title: string;
     description: string;
-    image_url: string;
+    image_filename: string;
     url: string;
   };
 };
