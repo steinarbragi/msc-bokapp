@@ -47,10 +47,10 @@ export async function POST(request: Request) {
         continue;
       }
 
-      const { title, description, image_url, url } = match.metadata as {
+      const { title, description, image_filename, url } = match.metadata as {
         title: string;
         description: string;
-        image_url: string;
+        image_filename: string;
         url: string;
       };
 
@@ -61,12 +61,12 @@ export async function POST(request: Request) {
       try {
         // Upsert book metadata
         await sql`
-          INSERT INTO books (id, title, description, image_url, url)
-          VALUES (${match.id}, ${title}, ${description}, ${image_url}, ${url})
+          INSERT INTO books (id, title, description, image_filename, url)
+          VALUES (${match.id}, ${title}, ${description}, ${image_filename}, ${url})
           ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             description = EXCLUDED.description,
-            image_url = EXCLUDED.image_url,
+            image_filename = EXCLUDED.image_filename,
             url = EXCLUDED.url
         `;
 

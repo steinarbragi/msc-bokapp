@@ -11,7 +11,7 @@ interface BookMetadata {
   title: string;
   description: string;
   url: string;
-  image_url?: string;
+  image_filename?: string;
 }
 
 interface SearchResult {
@@ -211,9 +211,9 @@ export default function SearchPage() {
                                 : 'border-purple-100 bg-white'
                             } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl`}
                           >
-                            {book.metadata.image_url && (
+                            {book.metadata.image_filename && (
                               <Image
-                                src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
+                                src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_filename}`}
                                 alt={book.metadata.title}
                                 width={200}
                                 height={320}
@@ -281,9 +281,9 @@ export default function SearchPage() {
                             className='flex transform flex-col rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8'
                           >
                             <div className='mx-auto w-48 flex-shrink-0 md:mx-0'>
-                              {book.metadata.image_url && (
+                              {book.metadata.image_filename && (
                                 <Image
-                                  src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_url}`}
+                                  src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_filename}`}
                                   alt={book.metadata.title}
                                   width={200}
                                   height={320}
