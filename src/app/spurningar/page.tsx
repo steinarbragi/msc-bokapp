@@ -12,7 +12,12 @@ const initialQuestions: Question[] = [
     text: 'Á hvaða aldri ert þú?', // Þetta má kannski orða betur?
     key: 'reader-age',
     type: 'single-choice',
-    options: ['6-7 ára 🌱', '8-9 ára 🌿', '10-11 ára 🌳', 'Annað 🤔'], // Kannski bara 1 text field?
+    options: [
+      '0-5 ára 🌱',
+      '6-12 ára 🌿',
+      '13 ára eða eldri 🌳',
+      'Fullorðinn að prófa 👨🏻‍💻',
+    ],
   },
   {
     id: 2,
