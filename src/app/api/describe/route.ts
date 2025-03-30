@@ -125,15 +125,31 @@ export async function POST(request: Request) {
     }
 
     const sql = neon(process.env.DATABASE_URL!);
-
     // Store all survey responses
     for (const [questionKey, response] of Object.entries(surveyResponses)) {
       try {
+        // Get the question text from generated_questions table
+        const questionResult = await sql`
+          SELECT question FROM generated_questions 
+          WHERE session_id = ${sessionId}
+          AND question_key = ${questionKey}
+          LIMIT 1
+        `;
+
+        const question = questionResult[0]?.question || questionKey;
+
         await sql`
-          INSERT INTO question_responses (session_id, question_key, response)
-          VALUES (${sessionId}, ${questionKey}, ${typeof response === 'object' ? JSON.stringify(response) : response})
+          INSERT INTO question_responses (session_id, question_key, question, response)
+          VALUES (
+            ${sessionId}, 
+            ${questionKey}, 
+            ${question},
+            ${typeof response === 'object' ? JSON.stringify(response) : response}
+          )
           ON CONFLICT (session_id, question_key) 
-          DO UPDATE SET response = ${typeof response === 'object' ? JSON.stringify(response) : response}
+          DO UPDATE SET 
+            question = ${question},
+            response = ${typeof response === 'object' ? JSON.stringify(response) : response}
         `;
       } catch (error) {
         console.error('Error storing response:', error);

@@ -190,8 +190,8 @@ Make sure the questions are engaging and help understand the user's interests be
       try {
         for (const question of questions) {
           await sql`
-            INSERT INTO generated_questions (session_id, question, options)
-            VALUES (${sessionId}, ${question.text}, ${question.options}::text[])
+            INSERT INTO generated_questions (session_id, question, question_key, options)
+            VALUES (${sessionId}, ${question.text}, ${question.key}, ${question.options}::text[])
           `;
         }
       } catch (error) {
