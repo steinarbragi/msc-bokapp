@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Bókavélin',
+  metadataBase: new URL('https://bokai.vercel.app'),
+
   description: 'Gervigreind sem hjálpar börnum að finna bækur',
   openGraph: {
     images: '/bokavel-meta.jpg',

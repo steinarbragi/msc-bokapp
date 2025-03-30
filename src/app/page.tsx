@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useBook } from './context/BookContext';
 import { motion } from 'framer-motion';
 export default function Home() {
-  const { setSessionId } = useBook();
+  const { setSessionId, resetSession } = useBook();
   const router = useRouter();
   const handleStart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent the default link behavior
 
     try {
+      // Reset any existing session data
+      resetSession();
+
       const response = await fetch('/api/survey/init', {
         method: 'POST',
       });
