@@ -105,13 +105,29 @@ export async function POST(request: Request) {
           detail?: string;
           hint?: string;
         };
-        console.error('Error storing book metadata or search result:', error);
+        console.error('Error storing book metadata or search result:', {
+          error,
+          bookId: match.id,
+          sessionId,
+          descriptionId,
+          details: {
+            name: error.name,
+            message: error.message,
+            code: error.code,
+            detail: error.detail,
+            hint: error.hint,
+          },
+        });
       }
     }
 
     return NextResponse.json(queryResponse);
   } catch (error) {
-    console.error('Error in search route:', error);
+    console.error('Error in search API:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: 'Failed to perform search' },
       { status: 500 }

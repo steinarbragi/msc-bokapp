@@ -84,7 +84,11 @@ export default function SearchPage() {
       const searchResults = await searchResponse.json();
       setResults(searchResults.matches);
     } catch (error: unknown) {
-      console.error('Error searching:', error);
+      console.error('Error in handleSearch:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       if (error instanceof Error) {
         setError(error.message);
       } else {
@@ -140,7 +144,11 @@ export default function SearchPage() {
       console.log('Received recommendations:', data.recommendations);
       setRecommendations(data.recommendations);
     } catch (error) {
-      console.error('Error getting recommendations:', error);
+      console.error('Error in getRecommendations:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       setError(
         error instanceof Error ? error.message : 'Failed to get recommendations'
       );

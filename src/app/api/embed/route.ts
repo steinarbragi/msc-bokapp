@@ -31,8 +31,8 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    // More detailed error logging
-    console.error('Error generating embedding:', {
+    console.error('Error in embed API:', {
+      error,
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       details:
@@ -41,7 +41,6 @@ export async function POST(request: Request) {
           : error,
     });
 
-    // Return more specific error message
     return new Response(
       JSON.stringify({
         error: 'Error generating embedding',

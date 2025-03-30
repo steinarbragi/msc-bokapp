@@ -49,6 +49,8 @@ const safeParseSurveyResponse = (
   } catch (error) {
     console.error('Error parsing JSON from localStorage:', {
       error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
       value,
       key: 'surveyResponses',
       defaultValue,
@@ -63,7 +65,6 @@ export function BookProvider({ children }: { children: ReactNode }) {
     () => {
       if (typeof window !== 'undefined') {
         const value = localStorage.getItem('coverDescription');
-        console.log('Loading coverDescription from localStorage:', value);
         return safeParseString(value, null);
       }
       return null;
@@ -74,7 +75,6 @@ export function BookProvider({ children }: { children: ReactNode }) {
     () => {
       if (typeof window !== 'undefined') {
         const value = localStorage.getItem('surveyResponses');
-        console.log('Loading surveyResponses from localStorage:', value);
         return safeParseSurveyResponse(value, null);
       }
       return null;
@@ -84,7 +84,6 @@ export function BookProvider({ children }: { children: ReactNode }) {
   const [sessionId, setSessionId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const value = localStorage.getItem('sessionId');
-      console.log('Loading sessionId from localStorage:', value);
       return safeParseString(value, null);
     }
     return null;
@@ -93,7 +92,6 @@ export function BookProvider({ children }: { children: ReactNode }) {
   const [descriptionId, setDescriptionId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const value = localStorage.getItem('descriptionId');
-      console.log('Loading descriptionId from localStorage:', value);
       return safeParseString(value, null);
     }
     return null;
@@ -104,12 +102,12 @@ export function BookProvider({ children }: { children: ReactNode }) {
     setCoverDescription(description);
     if (typeof window !== 'undefined') {
       try {
-        const value = JSON.stringify(description);
-        console.log('Saving coverDescription to localStorage:', value);
-        localStorage.setItem('coverDescription', value);
+        localStorage.setItem('coverDescription', JSON.stringify(description));
       } catch (error) {
-        console.error('Error saving coverDescription to localStorage:', {
+        console.error('Error setting coverDescription in localStorage:', {
           error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
           description,
         });
       }
@@ -120,12 +118,12 @@ export function BookProvider({ children }: { children: ReactNode }) {
     setSurveyResponses(responses);
     if (typeof window !== 'undefined') {
       try {
-        const value = JSON.stringify(responses);
-        console.log('Saving surveyResponses to localStorage:', value);
-        localStorage.setItem('surveyResponses', value);
+        localStorage.setItem('surveyResponses', JSON.stringify(responses));
       } catch (error) {
-        console.error('Error saving surveyResponses to localStorage:', {
+        console.error('Error setting surveyResponses in localStorage:', {
           error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
           responses,
         });
       }
@@ -136,12 +134,12 @@ export function BookProvider({ children }: { children: ReactNode }) {
     setSessionId(id);
     if (typeof window !== 'undefined') {
       try {
-        const value = JSON.stringify(id);
-        console.log('Saving sessionId to localStorage:', value);
-        localStorage.setItem('sessionId', value);
+        localStorage.setItem('sessionId', JSON.stringify(id));
       } catch (error) {
-        console.error('Error saving sessionId to localStorage:', {
+        console.error('Error setting sessionId in localStorage:', {
           error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
           id,
         });
       }
@@ -152,12 +150,12 @@ export function BookProvider({ children }: { children: ReactNode }) {
     setDescriptionId(id);
     if (typeof window !== 'undefined') {
       try {
-        const value = JSON.stringify(id);
-        console.log('Saving descriptionId to localStorage:', value);
-        localStorage.setItem('descriptionId', value);
+        localStorage.setItem('descriptionId', JSON.stringify(id));
       } catch (error) {
-        console.error('Error saving descriptionId to localStorage:', {
+        console.error('Error setting descriptionId in localStorage:', {
           error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
           id,
         });
       }
@@ -179,7 +177,11 @@ export function BookProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('sessionId');
         localStorage.removeItem('descriptionId');
       } catch (error) {
-        console.error('Error clearing localStorage:', error);
+        console.error('Error clearing localStorage:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        });
       }
     }
   };
