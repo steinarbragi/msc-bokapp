@@ -2,12 +2,20 @@ import { NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { neon } from '@neondatabase/serverless';
 
+// Function to strip emojis from text
+function stripEmojis(text: string): string {
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export const maxDuration = 150;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { vector, topK, sessionId, descriptionId } = body;
+    const { vector, topK, sessionId, descriptionId, age } = body;
 
     if (!vector) {
       return NextResponse.json(
@@ -33,11 +41,22 @@ export async function POST(request: Request) {
     // Get the index
     const index = pinecone.index(process.env.PINECONE_INDEX_NAME!);
 
+    // Strip emojis from age if it exists
+    const cleanAge = age ? stripEmojis(age) : undefined;
+
     // Query the index
     const queryResponse = await index.query({
       vector,
       topK: topK || 10,
       includeMetadata: true,
+      filter:
+        cleanAge && cleanAge !== 'Fullorðinn að prófa'
+          ? {
+              age_group: {
+                $contains: cleanAge,
+              },
+            }
+          : undefined,
     });
 
     // Store book metadata and search results
