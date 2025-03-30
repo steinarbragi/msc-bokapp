@@ -5,9 +5,10 @@ import { neon } from '@neondatabase/serverless';
 // Function to strip emojis from text
 function stripEmojis(text: string): string {
   return text
-    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') // Remove emojis
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces and other invisible characters
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .trim(); // Remove leading/trailing whitespace
 }
 
 export const maxDuration = 150;
@@ -50,13 +51,13 @@ export async function POST(request: Request) {
       topK: topK || 10,
       includeMetadata: true,
       filter:
-        cleanAge && cleanAge !== 'Fullorðinn að prófa'
-          ? {
+        !cleanAge || cleanAge === 'Fullorðinn að prófa'
+          ? undefined
+          : {
               age_group: {
                 $in: [cleanAge],
               },
-            }
-          : undefined,
+            },
     });
 
     // Store book metadata and search results
