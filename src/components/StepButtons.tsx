@@ -26,13 +26,13 @@ export function StepButtons({
   };
 
   return (
-    <div className='flex flex-wrap gap-2'>
+    <div className='flex flex-wrap gap-1.5 sm:gap-2'>
       {questions.map((question, index) => (
         <button
           key={index}
           onClick={() => onStepClick(index)}
           type='button'
-          className={`h-8 w-8 rounded-full ${
+          className={`h-7 w-7 rounded-full sm:h-8 sm:w-8 ${
             index === currentStep
               ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
               : isAnswered(question.key)
@@ -40,7 +40,7 @@ export function StepButtons({
                 : index < currentStep
                   ? 'bg-white/80 text-purple-600'
                   : 'bg-white/50 text-gray-600'
-          } flex items-center justify-center font-medium transition-all hover:scale-105`}
+          } flex items-center justify-center text-sm font-medium transition-all hover:scale-105 sm:text-base`}
         >
           {index + 1}
         </button>

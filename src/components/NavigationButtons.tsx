@@ -35,7 +35,7 @@ export function NavigationButtons({
         <button
           type='button'
           onClick={onNextStep}
-          className='mt-4 w-full rounded-xl border-2 border-gray-200 p-3 text-gray-500 transition-all hover:scale-[1.02] hover:border-gray-300 hover:text-gray-700'
+          className='mt-3 w-full rounded-xl border-2 border-gray-200 p-2.5 text-gray-500 transition-all hover:scale-[1.02] hover:border-gray-300 hover:text-gray-700 sm:mt-4 sm:p-3'
         >
           Sleppa spurningu
         </button>
@@ -45,7 +45,7 @@ export function NavigationButtons({
         <motion.button
           type='button'
           onClick={onNextStep}
-          className='mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-3 text-white transition-all hover:scale-[1.02] hover:shadow-lg'
+          className='mt-3 w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-2.5 text-white transition-all hover:scale-[1.02] hover:shadow-lg sm:mt-4 sm:p-3'
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -56,7 +56,7 @@ export function NavigationButtons({
       {shouldShowSubmit && (
         <motion.button
           type='submit'
-          className='mt-8 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 text-xl font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl'
+          className='mt-6 flex w-full justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-lg font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl sm:mt-8 sm:px-10 sm:py-4 sm:text-xl'
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
