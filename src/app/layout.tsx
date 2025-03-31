@@ -20,11 +20,11 @@ export const metadata: Metadata = {
 
   description: 'Gervigreind sem hjálpar börnum að finna bækur',
   openGraph: {
-    images: '/bokavel-meta-2.jpg',
+    images: '/bokavel-meta.jpg',
   },
   twitter: {
     card: 'summary_large_image',
-    images: '/bokavel-meta-2.jpg',
+    images: '/bokavel-meta.jpg',
   },
 };
 
