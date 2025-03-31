@@ -85,11 +85,11 @@ export default function Survey({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='mx-auto max-w-2xl'
+      className='mx-auto max-w-2xl px-4 sm:px-6'
     >
       <form onSubmit={handleSubmit(onSubmit)}>
         <ProgressBar currentStep={currentStep} totalSteps={questions.length} />
-        <div className='mb-8 flex items-center justify-between'>
+        <div className='mb-4 flex items-center justify-between sm:mb-8'>
           <StepButtons
             questions={questions}
             currentStep={currentStep}
@@ -105,12 +105,12 @@ export default function Survey({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -50, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className='transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'
+            className='transform rounded-2xl border-2 border-purple-200 bg-white p-4 shadow-xl sm:rounded-3xl sm:border-4 sm:p-8'
           >
             <motion.h1
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className='mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent'
+              className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent sm:mb-6 sm:text-3xl'
             >
               {currentQuestion.text}
             </motion.h1>
