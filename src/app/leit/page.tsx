@@ -179,13 +179,6 @@ export default function SearchPage() {
 
         {isLoading && !isProcessing ? (
           <div className='inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'>
-            <Image
-              src='/robot-girl.png'
-              alt='Bókavélin og barnið'
-              width={300}
-              height={300}
-              className='mx-auto mb-10'
-            />
             <Loader className='h-8 w-8 animate-spin text-purple-600' />
             <p className='mt-4 text-center text-lg text-gray-600'>
               Bókavélin er að leita að bókum sem gætu passað fyrir þig. Þetta
@@ -194,13 +187,6 @@ export default function SearchPage() {
           </div>
         ) : isProcessing ? (
           <div className='inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'>
-            <Image
-              src='/robot-girl.png'
-              alt='Bókavélin og barnið'
-              width={300}
-              height={300}
-              className='mx-auto mb-10'
-            />
             <Loader className='h-8 w-8 animate-spin text-purple-600' />
             <p className='mt-4 text-center text-lg text-gray-600'>
               Bókavélin er að vinna úr þínu vali og býr nú til persónuleg
