@@ -50,6 +50,7 @@ CREATE TABLE books (
     description TEXT NOT NULL,
     image_filename TEXT NOT NULL,
     url TEXT NOT NULL,
+    age_group TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

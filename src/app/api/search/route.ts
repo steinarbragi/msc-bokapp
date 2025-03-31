@@ -81,13 +81,14 @@ export async function POST(request: Request) {
       try {
         // Upsert book metadata
         await sql`
-          INSERT INTO books (id, title, description, image_filename, url)
-          VALUES (${match.id}, ${title}, ${description}, ${image_filename}, ${url})
+          INSERT INTO books (id, title, description, image_filename, url, age_group)
+          VALUES (${match.id}, ${title}, ${description}, ${image_filename}, ${url}, ${cleanAge || ''})
           ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             description = EXCLUDED.description,
             image_filename = EXCLUDED.image_filename,
-            url = EXCLUDED.url
+            url = EXCLUDED.url,
+            age_group = EXCLUDED.age_group
         `;
 
         // Store search result
