@@ -11,7 +11,7 @@ import { NavigationButtons } from '@/components/NavigationButtons';
 import Loader from '@/components/loader';
 import { useQuestionContext } from './QuestionContext';
 import { useBook } from '../context/BookContext';
-
+import Image from 'next/image';
 interface SurveyProps {
   questions: Question[];
   onComplete?: (answers: Record<string, string | string[]>) => void;
@@ -251,6 +251,13 @@ export default function Questions({
   if (isLoading) {
     return (
       <div className='flex min-h-screen flex-col items-center justify-center pb-48'>
+        <Image
+          src='/robot-girl.png'
+          alt='Bókavélin og barnið'
+          width={300}
+          height={300}
+          className='mx-auto mb-10'
+        />
         <Loader />
         <p className='pt-5 text-center text-lg'>
           Bókavélin er að leita að bókum. Þetta gæti tekið smá tíma.
@@ -262,6 +269,13 @@ export default function Questions({
   if (isLoadingMore) {
     return (
       <div className='flex min-h-screen flex-col items-center justify-center pb-48'>
+        <Image
+          src='/robot-girl.png'
+          alt='Bókavélin og barnið'
+          width={300}
+          height={300}
+          className='mx-auto mb-10'
+        />
         <Loader />
         <p className='pt-5 text-center text-lg'>
           Bókavélin er að búa til fleiri spurningar
