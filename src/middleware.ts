@@ -77,7 +77,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=()'
-  );
+  ); // deny access to camera, microphone, and geolocation
 
   // Check rate limit
   const ip = getClientIp(request);
