@@ -66,14 +66,25 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Security headers
+  // Enable DNS prefetching for better performance
   response.headers.set('X-DNS-Prefetch-Control', 'on');
+
+  // Force HTTPS and set cache duration to 1 year (31536000 seconds)
   response.headers.set(
     'Strict-Transport-Security',
     'max-age=31536000; includeSubDomains'
   );
+
+  // Prevent site from being embedded in iframes on other domains
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+
+  // Prevent MIME type sniffing security risks
   response.headers.set('X-Content-Type-Options', 'nosniff');
+
+  // Control how much referrer information is included with requests
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Explicitly disable access to sensitive device features
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=()'
