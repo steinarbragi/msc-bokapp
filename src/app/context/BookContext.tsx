@@ -15,8 +15,25 @@ type BookContextType = {
   setSessionId: (id: string) => void;
   descriptionId: string | null;
   setDescriptionId: (id: string) => void;
+  searchResults: SearchResult[] | null;
+  setSearchResults: (results: SearchResult[]) => void;
+  readBooks: Set<string>;
+  setReadBooks: (books: Set<string>) => void;
   resetSession: () => void;
 };
+
+interface BookMetadata {
+  title: string;
+  description: string;
+  url: string;
+  image_filename?: string;
+}
+
+interface SearchResult {
+  metadata: BookMetadata;
+  id: string;
+  score: number;
+}
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
 
@@ -97,6 +114,24 @@ export function BookProvider({ children }: { children: ReactNode }) {
     return null;
   });
 
+  const [searchResults, setSearchResults] = useState<SearchResult[] | null>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const value = localStorage.getItem('searchResults');
+        return value ? JSON.parse(value) : null;
+      }
+      return null;
+    }
+  );
+
+  const [readBooks, setReadBooks] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      const value = localStorage.getItem('readBooks');
+      return value ? new Set(JSON.parse(value)) : new Set();
+    }
+    return new Set();
+  });
+
   // Update localStorage when state changes
   const handleSetCoverDescription = (description: string) => {
     setCoverDescription(description);
@@ -162,12 +197,46 @@ export function BookProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleSetSearchResults = (results: SearchResult[]) => {
+    setSearchResults(results);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('searchResults', JSON.stringify(results));
+      } catch (error) {
+        console.error('Error setting searchResults in localStorage:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          results,
+        });
+      }
+    }
+  };
+
+  const handleSetReadBooks = (books: Set<string>) => {
+    setReadBooks(books);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('readBooks', JSON.stringify(Array.from(books)));
+      } catch (error) {
+        console.error('Error setting readBooks in localStorage:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          books,
+        });
+      }
+    }
+  };
+
   const resetSession = () => {
     // Clear all state
     setCoverDescription(null);
     setSurveyResponses(null);
     setSessionId(null);
     setDescriptionId(null);
+    setSearchResults(null);
+    setReadBooks(new Set());
 
     // Clear localStorage
     if (typeof window !== 'undefined') {
@@ -176,6 +245,8 @@ export function BookProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('surveyResponses');
         localStorage.removeItem('sessionId');
         localStorage.removeItem('descriptionId');
+        localStorage.removeItem('searchResults');
+        localStorage.removeItem('readBooks');
       } catch (error) {
         console.error('Error clearing localStorage:', {
           error,
@@ -197,6 +268,10 @@ export function BookProvider({ children }: { children: ReactNode }) {
         setSessionId: handleSetSessionId,
         descriptionId,
         setDescriptionId: handleSetDescriptionId,
+        searchResults,
+        setSearchResults: handleSetSearchResults,
+        readBooks,
+        setReadBooks: handleSetReadBooks,
         resetSession,
       }}
     >

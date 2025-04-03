@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useBook } from '../context/BookContext';
 import { motion } from 'framer-motion';
 
 interface BookMetadata {
@@ -27,7 +27,7 @@ interface Recommendation extends SearchResult {
 const MotionLink = motion(Link);
 
 export default function RecommendationsPage() {
-  const searchParams = useSearchParams();
+  const { searchResults, readBooks, sessionId, surveyResponses } = useBook();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,63 +35,19 @@ export default function RecommendationsPage() {
   useEffect(() => {
     const getRecommendations = async () => {
       try {
-        const readBooks = searchParams.get('readBooks')?.split(',') || [];
-        const sessionId = searchParams.get('sessionId');
-        const descriptionId = searchParams.get('descriptionId');
-        const coverDescription = searchParams.get('coverDescription');
-        const surveyResponses = JSON.parse(
-          searchParams.get('surveyResponses') || '{}'
-        );
-
-        if (!sessionId || !descriptionId || !coverDescription) {
-          throw new Error('Missing required parameters');
+        if (!sessionId || !searchResults) {
+          throw new Error('Missing required data');
         }
 
-        // First get the embedding for the search query
-        const embedResponse = await fetch('/api/embed', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: coverDescription }),
-        });
-
-        if (!embedResponse.ok) {
-          throw new Error('Failed to get embedding');
-        }
-
-        const { vector } = await embedResponse.json();
-
-        // Then search Pinecone with the embedding
-        const searchResponse = await fetch('/api/search', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            vector,
-            topK: 50,
-            sessionId,
-            descriptionId,
-            age: surveyResponses ? surveyResponses['reader-age'] : null,
-          }),
-        });
-
-        if (!searchResponse.ok) {
-          throw new Error('Failed to get search results');
-        }
-
-        const searchResults = await searchResponse.json();
-
-        // Finally get recommendations
+        // Get recommendations using the search results from the search page
         const response = await fetch('/api/recommend', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            searchResults: searchResults.matches,
-            readBooks,
+            searchResults,
+            readBooks: Array.from(readBooks),
             surveyResponses,
             sessionId,
           }),
@@ -120,7 +76,7 @@ export default function RecommendationsPage() {
     };
 
     getRecommendations();
-  }, [searchParams]);
+  }, [searchResults, readBooks, sessionId, surveyResponses]);
 
   return (
     <div className='mx-auto max-w-4xl'>

@@ -7,28 +7,21 @@ import Link from 'next/link';
 import { useBook } from '../context/BookContext';
 import { motion } from 'framer-motion';
 
-interface BookMetadata {
-  title: string;
-  description: string;
-  url: string;
-  image_filename?: string;
-}
-
-interface SearchResult {
-  metadata: BookMetadata;
-  id: string;
-  score: number;
-}
-
 const MotionLink = motion(Link);
 
 export default function SearchPage() {
-  const { coverDescription, surveyResponses, sessionId, descriptionId } =
-    useBook();
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const {
+    coverDescription,
+    surveyResponses,
+    sessionId,
+    descriptionId,
+    searchResults,
+    setSearchResults,
+    readBooks,
+    setReadBooks,
+  } = useBook();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [readBooks, setReadBooks] = useState<Set<string>>(new Set());
 
   const handleSearch = useCallback(async () => {
     if (!coverDescription || !sessionId || !descriptionId) return;
@@ -77,8 +70,8 @@ export default function SearchPage() {
         throw new Error(`Search failed: ${errorText}`);
       }
 
-      const searchResults = await searchResponse.json();
-      setResults(searchResults.matches);
+      const searchData = await searchResponse.json();
+      setSearchResults(searchData.matches);
     } catch (error: unknown) {
       console.error('Error in handleSearch:', {
         error,
@@ -93,25 +86,29 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [coverDescription, sessionId, descriptionId, surveyResponses]);
+  }, [
+    coverDescription,
+    sessionId,
+    descriptionId,
+    surveyResponses,
+    setSearchResults,
+  ]);
 
   const toggleReadStatus = (bookId: string) => {
-    setReadBooks(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(bookId)) {
-        newSet.delete(bookId);
-      } else {
-        newSet.add(bookId);
-      }
-      return newSet;
-    });
+    const newSet = new Set(readBooks);
+    if (newSet.has(bookId)) {
+      newSet.delete(bookId);
+    } else {
+      newSet.add(bookId);
+    }
+    setReadBooks(newSet);
   };
 
   useEffect(() => {
-    if (coverDescription) {
+    if (coverDescription && !searchResults && !isLoading) {
       handleSearch();
     }
-  }, [coverDescription, handleSearch]);
+  }, [coverDescription, handleSearch, searchResults, isLoading]);
 
   return (
     <div className='mx-auto max-w-4xl'>
@@ -144,7 +141,7 @@ export default function SearchPage() {
           </div>
         ) : (
           <>
-            {results.length > 0 && (
+            {searchResults && searchResults.length > 0 && (
               <div>
                 <h2 className='mb-4 text-4xl font-bold text-purple-800'>
                   Hefurðu lesið einhverjar af þessum bókum?
@@ -156,7 +153,7 @@ export default function SearchPage() {
                   persónuleg bókameðmæli.
                 </p>
                 <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-                  {results.map((book, index) => (
+                  {searchResults.map((book, index) => (
                     <div
                       key={index}
                       onClick={() => toggleReadStatus(book.id)}
@@ -215,7 +212,7 @@ export default function SearchPage() {
           </>
         )}
       </div>
-      {results.length > 0 && (
+      {searchResults && searchResults.length > 0 && (
         <div className='fixed bottom-8 right-8 z-50 flex flex-col items-center'>
           <motion.div
             animate={{
@@ -231,16 +228,7 @@ export default function SearchPage() {
             ↓
           </motion.div>
           <MotionLink
-            href={{
-              pathname: '/medmaeli',
-              query: {
-                readBooks: Array.from(readBooks),
-                sessionId,
-                descriptionId,
-                coverDescription,
-                surveyResponses: JSON.stringify(surveyResponses),
-              },
-            }}
+            href='/medmaeli'
             animate={{
               background: [
                 'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
