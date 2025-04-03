@@ -126,7 +126,7 @@ export default function Survey({
               isLastQuestion={isLastQuestion}
               isComplete={isComplete}
               isLoading={isLoading}
-              currentAnswer={watch(`question${currentQuestion.id}`)}
+              currentAnswer={answers[currentQuestion.key]}
               onNextStep={handleNextStep}
               submitButtonText={submitButtonText}
             />
