@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useBook } from '../context/BookContext';
-import { motion } from 'framer-motion';
-
-const MotionLink = motion(Link);
+import NextStepButton from './NextStepButton';
 
 export default function SearchPage() {
   const {
@@ -22,6 +20,8 @@ export default function SearchPage() {
   } = useBook();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFloatingButton, setShowFloatingButton] = useState(true);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = useCallback(async () => {
     if (!coverDescription || !sessionId || !descriptionId) return;
@@ -109,6 +109,22 @@ export default function SearchPage() {
       handleSearch();
     }
   }, [coverDescription, handleSearch, searchResults, isLoading]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (buttonRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const isButtonVisible =
+          buttonRect.top >= 0 && buttonRect.bottom <= window.innerHeight;
+        setShowFloatingButton(!isButtonVisible);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className='mx-auto max-w-4xl'>
@@ -207,52 +223,16 @@ export default function SearchPage() {
                     </div>
                   ))}
                 </div>
+                <div ref={buttonRef}>
+                  <NextStepButton />
+                </div>
               </div>
             )}
           </>
         )}
       </div>
-      {searchResults && searchResults.length > 0 && (
-        <div className='fixed bottom-8 right-8 z-50 flex flex-col items-center'>
-          <motion.div
-            animate={{
-              y: [0, -10, 0],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className='mb-2 text-4xl font-bold text-purple-600'
-          >
-            ↓
-          </motion.div>
-          <MotionLink
-            href='/medmaeli'
-            animate={{
-              background: [
-                'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
-                'linear-gradient(to right, #2563eb, #9333ea, #f97316)',
-                'linear-gradient(to right, #9333ea, #f97316, #2563eb)',
-                'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
-              ],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              repeatType: 'loop',
-            }}
-            className='flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl'
-          >
-            <span>✨</span>
-            <span>NÆSTA SKREF - FÁ MEÐMÆLI</span>
-            <span className='flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-bold text-purple-600 shadow-inner'>
-              {readBooks.size}
-            </span>
-            <span>✨</span>
-          </MotionLink>
-        </div>
+      {searchResults && searchResults.length > 0 && showFloatingButton && (
+        <NextStepButton isFloating />
       )}
     </div>
   );
