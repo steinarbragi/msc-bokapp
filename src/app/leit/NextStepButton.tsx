@@ -28,7 +28,7 @@ export default function NextStepButton({
 
   if (isFloating) {
     return (
-      <div className='fixed bottom-8 right-8 z-50 flex flex-col items-center'>
+      <div className='fixed bottom-8 right-8 z-50 flex flex-col items-center md:bottom-12 md:right-12 lg:bottom-16 lg:right-28'>
         <motion.div
           animate={{
             y: [0, -10, 0],

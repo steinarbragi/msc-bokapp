@@ -127,7 +127,7 @@ export default function SearchPage() {
   }, []);
 
   return (
-    <div className='mx-auto max-w-4xl'>
+    <div className='mx-auto max-w-7xl'>
       <div className='mb-2 flex items-center justify-between'>
         <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
           Bókavélin
@@ -168,7 +168,7 @@ export default function SearchPage() {
                   getur þú smellt á hnappinn neðst á síðunni til þess að fá
                   persónuleg bókameðmæli.
                 </p>
-                <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+                <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
                   {searchResults.map((book, index) => (
                     <div
                       key={index}
