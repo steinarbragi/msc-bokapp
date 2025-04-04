@@ -104,6 +104,43 @@ export async function POST(req: Request) {
 
     const sql = neon(process.env.DATABASE_URL!);
 
+    // Check if recommendations already exist for this session
+    const existingRecommendations = await sql`
+      SELECT id FROM recommendations 
+      WHERE session_id = ${sessionId}
+      LIMIT 1
+    `;
+
+    // If recommendations already exist, return them instead of creating new ones
+    if (existingRecommendations.length > 0) {
+      console.log(
+        'Found existing recommendations, fetching them instead of generating new ones'
+      );
+
+      const recommendations = await sql`
+        SELECT r.id, r.book_id, r.reasoning, b.title, b.description, b.image_filename, b.url 
+        FROM recommendations r
+        JOIN books b ON r.book_id = b.id
+        WHERE r.session_id = ${sessionId}
+        ORDER BY r.rank_position ASC
+      `;
+
+      // Format the recommendations in the expected structure
+      const formattedRecommendations = recommendations.map(rec => ({
+        id: rec.id,
+        book_id: rec.book_id,
+        reasoning: rec.reasoning,
+        metadata: {
+          title: rec.title,
+          description: rec.description,
+          image_filename: rec.image_filename,
+          url: rec.url,
+        },
+      }));
+
+      return NextResponse.json({ recommendations: formattedRecommendations });
+    }
+
     // Store read books
     for (const bookId of readBooks) {
       try {
@@ -150,7 +187,7 @@ ${Object.entries(surveyResponses || {})
 Hér er listi af bókum sem notandi hefur ekki lesið:
 ${unreadBooks.map((book: Book) => `- ${book.metadata.title}`).join('\n')}
 
-Veldu 10 bestu bækurnar úr listanum fyrir þennan notanda. Fyrir hverja bók skaltu útskýra í tveimur málsgreinum af hverju þú telur að bókin henti notandanum vel, með því að tala beint við notandann (t.d. "Þessi bók mun heilla þig..."). Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál.
+Veldu 20 bestu bækurnar úr listanum fyrir þennan notanda. Fyrir hverja bók skaltu útskýra í tveimur málsgreinum af hverju þú telur að bókin henti notandanum vel, með því að tala beint við notandann (t.d. "Þessi bók mun heilla þig..."). Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál.
 
 Mikilvægt: 
 1. Raðaðu bókunum í röð frá bestu til minnst góðrar fyrir þennan notanda
@@ -161,21 +198,34 @@ Mikilvægt:
     console.log('Sending prompt to Claude');
     const { response: completion, model: currentModel } =
       await createMessageWithRetry([{ role: 'user', content: prompt }]);
-    // Extract recommendations from the tool use response
+
+    // Initialize recommendations array
     let recommendations: { title: string; reasoning: string }[] = [];
+
+    // Extract recommendations from the tool use response
     if (completion?.content) {
       for (const block of completion.content) {
         if (block.type === 'tool_use' && 'input' in block) {
           const toolUseBlock = block as {
             input: { recommendations: { title: string; reasoning: string }[] };
           };
-          if (toolUseBlock.input?.recommendations) {
+          if (toolUseBlock.input?.recommendations?.length > 0) {
             recommendations = toolUseBlock.input.recommendations;
             break;
           }
         }
       }
     }
+
+    // If no recommendations were found, return an error
+    if (recommendations.length === 0) {
+      console.error('No valid recommendations found in Claude response');
+      return NextResponse.json(
+        { error: 'No recommendations generated' },
+        { status: 500 }
+      );
+    }
+
     // Match the recommendations with the full book data and reorder based on the titles
     const recommendedBooks = await Promise.all(
       recommendations.map(async (rec, index) => {

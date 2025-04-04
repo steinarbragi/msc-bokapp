@@ -50,38 +50,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get existing feedback
-    const existingFeedback = await sql`
-      SELECT * FROM recommendation_feedback 
-      WHERE session_id = ${sessionId} 
-      AND recommendation_id = ${recommendationId}
-    `;
-
     try {
-      let result;
-      if (existingFeedback.length > 0) {
-        // Update existing feedback
-        result = await sql`
-          UPDATE recommendation_feedback 
-          SET 
-            rating = COALESCE(${rating}, rating),
-            is_relevant = COALESCE(${isRelevant}, is_relevant),
-            feedback_text = COALESCE(${feedbackText}, feedback_text),
-            feedback_type = COALESCE(${feedbackType}, feedback_type)
-          WHERE session_id = ${sessionId} 
-          AND recommendation_id = ${recommendationId}
-          RETURNING *
-        `;
-      } else {
-        // Insert new feedback
-        result = await sql`
-          INSERT INTO recommendation_feedback 
-          (session_id, recommendation_id, rating, is_relevant, feedback_text, feedback_type)
-          VALUES 
-          (${sessionId}, ${recommendationId}, ${rating}, ${isRelevant}, ${feedbackText}, ${feedbackType})
-          RETURNING *
-        `;
-      }
+      // Use a single upsert operation instead of checking and then inserting/updating
+      const result = await sql`
+        INSERT INTO recommendation_feedback 
+        (session_id, recommendation_id, rating, is_relevant, feedback_text, feedback_type)
+        VALUES 
+        (${sessionId}, ${recommendationId}, ${rating}, ${isRelevant}, ${feedbackText}, ${feedbackType})
+        ON CONFLICT (session_id, recommendation_id) 
+        DO UPDATE SET
+          rating = COALESCE(EXCLUDED.rating, recommendation_feedback.rating),
+          is_relevant = COALESCE(EXCLUDED.is_relevant, recommendation_feedback.is_relevant),
+          feedback_text = COALESCE(EXCLUDED.feedback_text, recommendation_feedback.feedback_text),
+          feedback_type = COALESCE(EXCLUDED.feedback_type, recommendation_feedback.feedback_type),
+          updated_at = NOW()
+        RETURNING *
+      `;
 
       return NextResponse.json({ success: true, data: result[0] });
     } catch (dbError: unknown) {

@@ -1,11 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useBook } from '../context/BookContext';
 import { motion } from 'framer-motion';
+
+type Recommendation = {
+  id: string;
+  book_id: string;
+  metadata: {
+    title: string;
+    description: string;
+    image_filename: string;
+    url: string;
+  };
+  reasoning: string;
+};
 
 const MotionLink = motion(Link);
 
@@ -24,6 +36,8 @@ export default function RecommendationsPage() {
     Record<string, boolean>
   >({});
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const apiCallInProgressRef = useRef(false);
+
   const toggleDescription = (bookId: string) => {
     setExpandedDescriptions(prev => ({
       ...prev,
@@ -31,67 +45,83 @@ export default function RecommendationsPage() {
     }));
   };
 
-  const toggleBookSelection = async (
-    bookId: string,
-    recommendationId: string
-  ) => {
-    if (!sessionId) {
-      console.error('No session ID available');
-      return;
-    }
-
-    setSelectedBooks(prev => {
-      const newSet = new Set(prev);
-      const willBeSelected = !newSet.has(bookId);
-
-      if (willBeSelected) {
-        newSet.add(bookId);
-      } else {
-        newSet.delete(bookId);
+  const toggleBookSelection = useCallback(
+    async (bookId: string, recommendationId: string) => {
+      if (!sessionId) {
+        console.error('No session ID available');
+        return;
       }
 
-      // Submit simplified feedback
-      (async () => {
-        try {
-          const response = await fetch('/api/recommendations/feedback', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              sessionId,
-              recommendationId,
-              isRelevant: willBeSelected,
-              feedbackType: willBeSelected ? 'yes' : 'no',
-            }),
-          });
+      setSelectedBooks(prev => {
+        const newSet = new Set(prev);
+        const willBeSelected = !newSet.has(bookId);
 
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-        } catch (error) {
-          console.error('Error submitting feedback:', error);
-          setSelectedBooks(prev => {
-            const revertedSet = new Set(prev);
-            if (willBeSelected) {
-              revertedSet.delete(bookId);
-            } else {
-              revertedSet.add(bookId);
-            }
-            return revertedSet;
-          });
+        if (willBeSelected) {
+          newSet.add(bookId);
+        } else {
+          newSet.delete(bookId);
         }
-      })();
-      return newSet;
-    });
-  };
+
+        // Submit feedback
+        (async () => {
+          try {
+            const response = await fetch('/api/recommendations/feedback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sessionId,
+                recommendationId,
+                isRelevant: willBeSelected,
+                feedbackType: willBeSelected ? 'yes' : 'no',
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+          } catch (error) {
+            console.error('Error submitting feedback:', error);
+            setSelectedBooks(prev => {
+              const revertedSet = new Set(prev);
+              if (willBeSelected) {
+                revertedSet.delete(bookId);
+              } else {
+                revertedSet.add(bookId);
+              }
+              return revertedSet;
+            });
+          }
+        })();
+        return newSet;
+      });
+    },
+    [sessionId]
+  );
 
   useEffect(() => {
     const getRecommendations = async () => {
+      // If already loading or API call in progress, don't start another one
+      if (apiCallInProgressRef.current) return;
+
       try {
-        if (!sessionId || !searchResults) {
-          throw new Error('Missing required data');
+        // If we already have recommendations, just filter them and return
+        if (recommendations && recommendations.length > 0) {
+          setIsLoading(false);
+          return;
         }
+
+        // If we don't have search results, we can't get recommendations
+        if (!sessionId || !searchResults) {
+          setError('Vinsamlegast farðu fyrst í gegnum leitarsíðuna');
+          setIsLoading(false);
+          return;
+        }
+
+        // Mark API call as in progress
+        apiCallInProgressRef.current = true;
+        const requestTimestamp = Date.now();
 
         // Get recommendations using the search results from the search page
         const response = await fetch('/api/recommend', {
@@ -104,15 +134,37 @@ export default function RecommendationsPage() {
             readBooks: Array.from(readBooks),
             surveyResponses,
             sessionId,
+            requestTimestamp, // Add timestamp to prevent caching
           }),
+          // Add cache: 'no-store' to prevent duplicate requests
+          cache: 'no-store',
         });
 
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Failed to get recommendations:', errorText);
           throw new Error('Failed to get recommendations');
         }
 
         const data = await response.json();
-        setRecommendations(data.recommendations);
+
+        // Check if recommendations exist in the response data
+        if (!data.recommendations || !Array.isArray(data.recommendations)) {
+          console.error('Invalid recommendations format:', data);
+          throw new Error(
+            'Received invalid recommendations format from server'
+          );
+        }
+
+        // Only update if we don't already have recommendations now
+        // This prevents overwriting if another request completed while this one was in progress
+        if (!recommendations || recommendations.length === 0) {
+          // Filter out any books that have been marked as read
+          const filteredRecommendations = data.recommendations.filter(
+            (rec: Recommendation) => !readBooks.has(rec.book_id)
+          );
+          setRecommendations(filteredRecommendations);
+        }
       } catch (error) {
         console.error('Error in getRecommendations:', {
           error,
@@ -125,18 +177,23 @@ export default function RecommendationsPage() {
             : 'Failed to get recommendations'
         );
       } finally {
+        apiCallInProgressRef.current = false;
         setIsLoading(false);
       }
     };
 
-    getRecommendations();
-  }, [
-    searchResults,
-    readBooks,
-    sessionId,
-    surveyResponses,
-    setRecommendations,
-  ]);
+    // Only call getRecommendations if we don't already have recommendations
+    // or if we are showing loading state
+    if (!recommendations || !recommendations.length || isLoading) {
+      getRecommendations();
+    } else {
+      setIsLoading(false);
+    }
+  }, []); // Empty dependency array to only run once on mount
+
+  // Filter recommendations to exclude read books
+  const filteredRecommendations =
+    recommendations?.filter(rec => !readBooks.has(rec.book_id)) || [];
 
   return (
     <div className='mx-auto max-w-4xl'>
@@ -177,7 +234,7 @@ export default function RecommendationsPage() {
           </div>
         ) : (
           <>
-            {recommendations && recommendations.length > 0 && (
+            {filteredRecommendations.length > 0 ? (
               <div>
                 <div className='mb-4 flex items-center justify-between'>
                   <h2 className='text-4xl font-bold text-purple-800'>
@@ -190,7 +247,7 @@ export default function RecommendationsPage() {
                   frábært ef þú gætir svarað stuttri könnun um vefsíðuna.
                 </p>
                 <div className='space-y-6'>
-                  {recommendations.map((recommendation, index) => (
+                  {filteredRecommendations.map((recommendation, index) => (
                     <div
                       key={index}
                       onClick={() =>
@@ -286,6 +343,17 @@ export default function RecommendationsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className='text-center'>
+                <h2 className='mb-4 text-2xl font-bold text-purple-800'>
+                  Engar bækur fundust
+                </h2>
+                <p className='text-gray-600'>
+                  Því miður fundust engar bækur sem passa við þín áhugamál og
+                  eru ólesnar. Prófaðu að fara til baka og velja færri bækur sem
+                  þú hefur lesið.
+                </p>
               </div>
             )}
           </>

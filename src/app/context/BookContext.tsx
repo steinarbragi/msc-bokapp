@@ -163,6 +163,19 @@ export function BookProvider({ children }: { children: ReactNode }) {
         console.error('Error parsing read books from localStorage:', error);
       }
     }
+
+    // Recommendations
+    const storedRecommendations = localStorage.getItem('recommendations');
+    if (storedRecommendations) {
+      try {
+        setRecommendations(JSON.parse(storedRecommendations));
+      } catch (error) {
+        console.error(
+          'Error parsing recommendations from localStorage:',
+          error
+        );
+      }
+    }
   }, []); // Empty dependency array means this runs once on mount
 
   // Update localStorage when state changes
@@ -256,7 +269,21 @@ export function BookProvider({ children }: { children: ReactNode }) {
           error,
           message: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined,
-          books,
+        });
+      }
+    }
+  };
+
+  const handleSetRecommendations = (recs: Recommendation[] | null) => {
+    setRecommendations(recs);
+    if (typeof window !== 'undefined' && recs) {
+      try {
+        localStorage.setItem('recommendations', JSON.stringify(recs));
+      } catch (error) {
+        console.error('Error setting recommendations in localStorage:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
         });
       }
     }
@@ -323,7 +350,7 @@ export function BookProvider({ children }: { children: ReactNode }) {
         setReadBooks: handleSetReadBooks,
         resetSession,
         recommendations,
-        setRecommendations,
+        setRecommendations: handleSetRecommendations,
         addRecommendation,
         removeRecommendation,
       }}

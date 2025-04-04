@@ -8,10 +8,12 @@ const MotionLink = motion(Link);
 
 interface NextStepButtonProps {
   isFloating?: boolean;
+  isDisabled?: boolean;
 }
 
 export default function NextStepButton({
   isFloating = false,
+  isDisabled = false,
 }: NextStepButtonProps) {
   const { readBooks } = useBook();
 
@@ -25,6 +27,11 @@ export default function NextStepButton({
       <span>✨</span>
     </>
   );
+
+  // Don't show button if disabled
+  if (isDisabled) {
+    return null;
+  }
 
   if (isFloating) {
     return (

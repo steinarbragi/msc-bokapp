@@ -17,17 +17,23 @@ export default function SearchPage() {
     setSearchResults,
     readBooks,
     setReadBooks,
+    setRecommendations,
   } = useBook();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingRecommendations, setIsGeneratingRecommendations] =
+    useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const searchInitiatedRef = useRef(false);
+  const recommendationsGeneratingRef = useRef(false);
 
   const handleSearch = useCallback(async () => {
     if (!coverDescription || !sessionId || !descriptionId) return;
 
     setIsLoading(true);
     setError(null);
+    searchInitiatedRef.current = true;
 
     try {
       // First get the embedding for the search query
@@ -72,6 +78,40 @@ export default function SearchPage() {
 
       const searchData = await searchResponse.json();
       setSearchResults(searchData.matches);
+      setIsLoading(false);
+
+      // Generate recommendations only if not already in progress
+      if (!recommendationsGeneratingRef.current) {
+        setIsGeneratingRecommendations(true);
+        recommendationsGeneratingRef.current = true;
+        try {
+          const recommendResponse = await fetch('/api/recommend', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              searchResults: searchData.matches,
+              readBooks: Array.from(readBooks),
+              surveyResponses,
+              sessionId,
+            }),
+          });
+
+          if (!recommendResponse.ok) {
+            throw new Error('Failed to generate recommendations');
+          }
+
+          const recommendData = await recommendResponse.json();
+          setRecommendations(recommendData.recommendations);
+        } catch (recommendError) {
+          console.error('Error generating recommendations:', recommendError);
+          // Don't throw here as search results are still valid
+        } finally {
+          setIsGeneratingRecommendations(false);
+          recommendationsGeneratingRef.current = false;
+        }
+      }
     } catch (error: unknown) {
       console.error('Error in handleSearch:', {
         error,
@@ -83,8 +123,9 @@ export default function SearchPage() {
       } else {
         setError('An unknown error occurred');
       }
-    } finally {
       setIsLoading(false);
+      setIsGeneratingRecommendations(false);
+      recommendationsGeneratingRef.current = false;
     }
   }, [
     coverDescription,
@@ -92,6 +133,8 @@ export default function SearchPage() {
     descriptionId,
     surveyResponses,
     setSearchResults,
+    readBooks,
+    setRecommendations,
   ]);
 
   const toggleReadStatus = (bookId: string) => {
@@ -105,10 +148,25 @@ export default function SearchPage() {
   };
 
   useEffect(() => {
-    if (coverDescription && !searchResults && !isLoading) {
+    const shouldSearch =
+      coverDescription &&
+      sessionId &&
+      descriptionId &&
+      !searchResults &&
+      !isLoading &&
+      !searchInitiatedRef.current;
+
+    if (shouldSearch) {
       handleSearch();
     }
-  }, [coverDescription, handleSearch, searchResults, isLoading]);
+  }, [
+    coverDescription,
+    sessionId,
+    descriptionId,
+    searchResults,
+    isLoading,
+    handleSearch,
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -163,85 +221,95 @@ export default function SearchPage() {
               eru ekki endanleg meðmæli, þú færð þau í næsta skrefi.
             </p>
           </div>
-        ) : (
-          <>
-            {searchResults && searchResults.length > 0 && (
-              <div>
-                <h2 className='mb-4 text-4xl font-bold text-purple-800'>
-                  Hefurðu lesið einhverjar af þessum bókum?
-                </h2>
-                <p className='mb-4 rounded-lg bg-purple-50 p-4 text-gray-600'>
-                  Þetta eru ekki endanleg meðmæli, þú færð þau í næsta skrefi.
+        ) : searchResults && searchResults.length > 0 ? (
+          <div>
+            <h2 className='mb-4 text-4xl font-bold text-purple-800'>
+              Hefurðu lesið einhverjar af þessum bókum?
+            </h2>
+            <p className='mb-4 rounded-lg bg-purple-50 p-4 text-gray-600'>
+              {isGeneratingRecommendations ? (
+                <>
+                  Bókavélin er að vinna úr þínu vali og býr til persónuleg
+                  bókameðmæli. Þú getur merkt við bækur sem þú hefur lesið á
+                  meðan.
+                </>
+              ) : (
+                <>
                   Nú getur þú merkt við þær bækur sem þú hefur þegar lesið. Svo
                   getur þú smellt á hnappinn neðst á síðunni til þess að fá
                   persónuleg bókameðmæli.
-                </p>
-                <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-                  {searchResults.map((book, index) => (
-                    <div
-                      key={index}
-                      onClick={() => toggleReadStatus(book.id)}
-                      className={`transform rounded-xl border-2 ${
-                        readBooks.has(book.id)
-                          ? 'border-green-200 bg-green-50'
-                          : 'border-purple-100 bg-white'
-                      } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl`}
+                </>
+              )}
+            </p>
+            <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+              {searchResults.map((book, index) => (
+                <div
+                  key={index}
+                  onClick={() => toggleReadStatus(book.id)}
+                  className={`transform rounded-xl border-2 ${
+                    readBooks.has(book.id)
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-purple-100 bg-white'
+                  } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl`}
+                >
+                  {book.metadata.image_filename && (
+                    <Image
+                      src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_filename}`}
+                      alt={book.metadata.title}
+                      width={200}
+                      height={320}
+                      className='mb-4 h-80 w-full rounded-lg object-cover'
+                    />
+                  )}
+                  <h2 className='mb-2 text-xl font-semibold text-purple-800'>
+                    {book.metadata.title}
+                  </h2>
+                  <p className='mb-4 line-clamp-3 text-gray-600'>
+                    {book.metadata.description}
+                  </p>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      toggleReadStatus(book.id);
+                    }}
+                    className={`w-full rounded-lg px-4 py-3 text-lg font-medium transition-all ${
+                      readBooks.has(book.id)
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                    }`}
+                  >
+                    {readBooks.has(book.id) ? 'Lesin ✓' : 'Merkja sem lesna'}
+                  </button>
+                  <div className='pt-4'>
+                    <Link
+                      href={book.metadata.url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-center text-xs text-blue-500'
+                      onClick={e => e.stopPropagation()}
                     >
-                      {book.metadata.image_filename && (
-                        <Image
-                          src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_filename}`}
-                          alt={book.metadata.title}
-                          width={200}
-                          height={320}
-                          className='mb-4 h-80 w-full rounded-lg object-cover'
-                        />
-                      )}
-                      <h2 className='mb-2 text-xl font-semibold text-purple-800'>
-                        {book.metadata.title}
-                      </h2>
-                      <p className='mb-4 line-clamp-3 text-gray-600'>
-                        {book.metadata.description}
-                      </p>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          toggleReadStatus(book.id);
-                        }}
-                        className={`w-full rounded-lg px-4 py-3 text-lg font-medium transition-all ${
-                          readBooks.has(book.id)
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-                        }`}
-                      >
-                        {readBooks.has(book.id)
-                          ? 'Lesin ✓'
-                          : 'Merkja sem lesna'}
-                      </button>
-                      <div className='pt-4'>
-                        <Link
-                          href={book.metadata.url}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='text-center text-xs text-blue-500'
-                          onClick={e => e.stopPropagation()}
-                        >
-                          Skoða hjá Forlaginu
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                      Skoða hjá Forlaginu
+                    </Link>
+                  </div>
                 </div>
-                <div ref={buttonRef}>
-                  <NextStepButton />
-                </div>
-              </div>
+              ))}
+            </div>
+            <div ref={buttonRef}>
+              <NextStepButton />
+            </div>
+            {isGeneratingRecommendations && (
+              <p className='mt-4 text-center text-sm text-purple-600'>
+                Meðmæli að hlaða... Þú getur haldið áfram og þau verða tilbúin á
+                næstu síðu.
+              </p>
             )}
-          </>
-        )}
+          </div>
+        ) : null}
       </div>
-      {searchResults && searchResults.length > 0 && showFloatingButton && (
-        <NextStepButton isFloating />
-      )}
+      {searchResults &&
+        searchResults.length > 0 &&
+        !isLoading &&
+        showFloatingButton && <NextStepButton isFloating />}
     </div>
   );
 }
