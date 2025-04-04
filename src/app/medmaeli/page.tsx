@@ -6,31 +6,140 @@ import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useBook } from '../context/BookContext';
 import { motion } from 'framer-motion';
-
-interface BookMetadata {
-  title: string;
-  description: string;
-  url: string;
-  image_filename?: string;
-}
-
-interface SearchResult {
-  metadata: BookMetadata;
-  id: string;
-  score: number;
-}
-
-interface Recommendation extends SearchResult {
-  reasoning: string;
-}
+import FeedbackModal from './FeedbackModal';
 
 const MotionLink = motion(Link);
 
 export default function RecommendationsPage() {
-  const { searchResults, readBooks, sessionId, surveyResponses } = useBook();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const {
+    searchResults,
+    readBooks,
+    sessionId,
+    surveyResponses,
+    recommendations,
+    setRecommendations,
+  } = useBook();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<
+    Record<string, boolean>
+  >({});
+  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
+  const [feedbackModal, setFeedbackModal] = useState<{
+    isOpen: boolean;
+    recommendationId: string | null;
+    title: string;
+    reasoning: string | null;
+    imageUrl: string | null;
+  }>({
+    isOpen: false,
+    recommendationId: null,
+    title: '',
+    reasoning: null,
+    imageUrl: null,
+  });
+
+  const toggleDescription = (bookId: string) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [bookId]: !prev[bookId],
+    }));
+  };
+
+  const toggleBookSelection = async (
+    bookId: string,
+    recommendationId: string
+  ) => {
+    if (!sessionId) {
+      console.error('No session ID available');
+      return;
+    }
+
+    setSelectedBooks(prev => {
+      const newSet = new Set(prev);
+      const willBeSelected = !newSet.has(bookId);
+
+      if (willBeSelected) {
+        newSet.add(bookId);
+      } else {
+        newSet.delete(bookId);
+      }
+
+      // Submit feedback about relevance
+      fetch('/api/recommendations/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          recommendationId,
+          isRelevant: willBeSelected,
+          feedbackType: willBeSelected ? 'yes' : 'no',
+        }),
+      }).catch(error => {
+        console.error('Error submitting feedback:', error);
+      });
+
+      return newSet;
+    });
+  };
+
+  const openFeedbackModal = (
+    recommendationId: string,
+    title: string,
+    reasoning: string | null,
+    imageUrl: string | null
+  ) => {
+    setFeedbackModal({
+      isOpen: true,
+      recommendationId,
+      title,
+      reasoning,
+      imageUrl,
+    });
+  };
+
+  const closeFeedbackModal = () => {
+    setFeedbackModal({
+      isOpen: false,
+      recommendationId: null,
+      title: '',
+      reasoning: null,
+      imageUrl: null,
+    });
+  };
+
+  const handleFeedbackSubmit = async (feedbackType: 'yes' | 'maybe' | 'no') => {
+    if (!feedbackModal.recommendationId) return;
+
+    const feedbackData = {
+      sessionId,
+      recommendationId: feedbackModal.recommendationId,
+      isRelevant: feedbackType !== 'no',
+      feedbackType,
+    };
+
+    try {
+      const response = await fetch('/api/recommendations/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit feedback');
+      }
+
+      closeFeedbackModal();
+    } catch (error) {
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const getRecommendations = async () => {
@@ -76,7 +185,13 @@ export default function RecommendationsPage() {
     };
 
     getRecommendations();
-  }, [searchResults, readBooks, sessionId, surveyResponses]);
+  }, [
+    searchResults,
+    readBooks,
+    sessionId,
+    surveyResponses,
+    setRecommendations,
+  ]);
 
   return (
     <div className='mx-auto max-w-4xl'>
@@ -109,51 +224,108 @@ export default function RecommendationsPage() {
           </div>
         ) : (
           <>
-            {recommendations.length > 0 && (
+            {recommendations && recommendations.length > 0 && (
               <div>
                 <div className='mb-4 flex items-center justify-between'>
-                  <h2 className='text-2xl font-bold text-purple-800'>
-                    Bókameðmæli
+                  <h2 className='text-4xl font-bold text-purple-800'>
+                    Bækur fyrir þig
                   </h2>
                 </div>
+                <p className='mb-4 text-gray-600'>
+                  Þetta eru bækur sem bókavélin hefur fann sérstaklega fyrir
+                  þig!
+                </p>
                 <div className='space-y-6'>
-                  {recommendations.map((book, index) => (
-                    <Link
+                  {recommendations.map((recommendation, index) => (
+                    <div
                       key={index}
-                      href={`https://leitir.is/discovery/search?query=any,contains,${encodeURIComponent(book.metadata.title)}&tab=MyLibrary&search_scope=10000_MYLIB&vid=354ILC_NETWORK:10000_UNION&offset=0`}
-                      target='_blank'
-                      rel='noopener noreferrer'
                       className='flex transform flex-col rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8'
                     >
-                      <div className='mx-auto w-48 flex-shrink-0 md:mx-0'>
-                        {book.metadata.image_filename && (
+                      <div className='mx-auto w-64 flex-shrink-0 md:mx-0'>
+                        {recommendation.metadata.image_filename && (
                           <Image
-                            src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${book.metadata.image_filename}`}
-                            alt={book.metadata.title}
-                            width={200}
-                            height={320}
-                            className='h-64 w-full rounded-lg object-cover'
+                            src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${recommendation.metadata.image_filename}`}
+                            alt={recommendation.metadata.title}
+                            width={300}
+                            height={480}
+                            className='h-80 w-full rounded-lg object-cover shadow-md'
                           />
                         )}
                       </div>
                       <div className='mt-4 md:mt-0'>
                         <h2 className='mb-2 text-xl font-semibold text-purple-800'>
-                          {book.metadata.title}
+                          {recommendation.metadata.title}
                         </h2>
-                        <p className='mb-4 line-clamp-3 text-gray-600'>
-                          {book.metadata.description}
+                        <p
+                          className={`mb-4 text-gray-600 ${!expandedDescriptions[recommendation.id] ? 'line-clamp-3' : ''}`}
+                        >
+                          {recommendation.metadata.description}
                         </p>
 
-                        {book.reasoning && (
+                        {recommendation.metadata.description.length > 150 && (
+                          <button
+                            onClick={() => toggleDescription(recommendation.id)}
+                            className='text-sm text-purple-600 hover:text-purple-800'
+                          >
+                            {expandedDescriptions[recommendation.id]
+                              ? 'Sýna minna'
+                              : 'Sýna meira'}
+                          </button>
+                        )}
+
+                        {recommendation.reasoning && (
                           <div className='mt-4 rounded-lg bg-purple-50 p-3 text-sm text-purple-700'>
-                            <p className='text-xs text-gray-500'>
+                            <p className='text-md mb-2 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text font-bold text-transparent'>
                               Hvað segir bókavélin?
                             </p>
-                            {book.reasoning}
+                            {recommendation.reasoning}
                           </div>
                         )}
+
+                        <div className='mt-4 flex flex-wrap gap-4'>
+                          <Link
+                            href={`https://leitir.is/discovery/search?query=any,contains,${encodeURIComponent(recommendation.metadata.title)}&tab=MyLibrary&search_scope=10000_MYLIB&vid=354ILC_NETWORK:10000_UNION&offset=0`}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700'
+                          >
+                            Finna á bókasafni
+                          </Link>
+                          <button
+                            onClick={() =>
+                              toggleBookSelection(
+                                recommendation.book_id,
+                                recommendation.id
+                              )
+                            }
+                            className={`rounded-lg px-4 py-2 transition-colors ${
+                              selectedBooks.has(recommendation.book_id)
+                                ? 'bg-green-600 text-white hover:bg-green-700'
+                                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                            }`}
+                          >
+                            {selectedBooks.has(recommendation.book_id)
+                              ? 'Valin'
+                              : 'Ég vil þessa!'}
+                          </button>
+                          <button
+                            onClick={() =>
+                              openFeedbackModal(
+                                recommendation.id,
+                                recommendation.metadata.title,
+                                recommendation.reasoning,
+                                recommendation.metadata.image_filename
+                                  ? `https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${recommendation.metadata.image_filename}`
+                                  : null
+                              )
+                            }
+                            className='rounded-lg bg-blue-100 px-4 py-2 text-blue-700 transition-colors hover:bg-blue-200'
+                          >
+                            Gefa álit
+                          </button>
+                        </div>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -161,7 +333,17 @@ export default function RecommendationsPage() {
           </>
         )}
       </div>
-      {recommendations.length > 0 && (
+      <FeedbackModal
+        isOpen={feedbackModal.isOpen}
+        title={feedbackModal.title}
+        reasoning={feedbackModal.reasoning}
+        imageUrl={feedbackModal.imageUrl}
+        recommendationId={feedbackModal.recommendationId || ''}
+        sessionId={sessionId || ''}
+        onClose={closeFeedbackModal}
+        onSubmit={handleFeedbackSubmit}
+      />
+      {recommendations && recommendations.length > 0 && (
         <MotionLink
           href='/spurningar/konnun'
           animate={{

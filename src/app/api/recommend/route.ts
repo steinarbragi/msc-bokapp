@@ -196,12 +196,20 @@ Mikilvægt:
 
         // Store recommendation in database
         try {
-          await sql`
+          const result = await sql`
             INSERT INTO recommendations 
             (session_id, book_id, reasoning, rank_position, model)
             VALUES 
             (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
+            RETURNING id
           `;
+
+          return {
+            ...book,
+            id: result[0].id,
+            book_id: book.id,
+            reasoning: rec.reasoning,
+          };
         } catch (dbError: unknown) {
           const error = dbError as {
             name?: string;
@@ -213,11 +221,6 @@ Mikilvægt:
           console.error('Error storing recommendation:', error);
           // Continue with next recommendation even if storage fails
         }
-
-        return {
-          ...book,
-          reasoning: rec.reasoning,
-        };
       })
     );
     // Filter out any null values before returning
