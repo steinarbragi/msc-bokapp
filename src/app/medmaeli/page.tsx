@@ -6,7 +6,6 @@ import { Loader } from 'lucide-react';
 import Link from 'next/link';
 import { useBook } from '../context/BookContext';
 import { motion } from 'framer-motion';
-import FeedbackModal from './FeedbackModal';
 
 const MotionLink = motion(Link);
 
@@ -25,20 +24,6 @@ export default function RecommendationsPage() {
     Record<string, boolean>
   >({});
   const [selectedBooks, setSelectedBooks] = useState<Set<string>>(new Set());
-  const [feedbackModal, setFeedbackModal] = useState<{
-    isOpen: boolean;
-    recommendationId: string | null;
-    title: string;
-    reasoning: string | null;
-    imageUrl: string | null;
-  }>({
-    isOpen: false,
-    recommendationId: null,
-    title: '',
-    reasoning: null,
-    imageUrl: null,
-  });
-
   const toggleDescription = (bookId: string) => {
     setExpandedDescriptions(prev => ({
       ...prev,
@@ -83,47 +68,6 @@ export default function RecommendationsPage() {
 
       return newSet;
     });
-  };
-
-  const closeFeedbackModal = () => {
-    setFeedbackModal({
-      isOpen: false,
-      recommendationId: null,
-      title: '',
-      reasoning: null,
-      imageUrl: null,
-    });
-  };
-
-  const handleFeedbackSubmit = async (feedbackType: 'yes' | 'maybe' | 'no') => {
-    if (!feedbackModal.recommendationId) return;
-
-    const feedbackData = {
-      sessionId,
-      recommendationId: feedbackModal.recommendationId,
-      isRelevant: feedbackType !== 'no',
-      feedbackType,
-    };
-
-    try {
-      const response = await fetch('/api/recommendations/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(feedbackData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit feedback');
-      }
-
-      closeFeedbackModal();
-    } catch (error) {
-      throw error;
-    }
   };
 
   useEffect(() => {
@@ -322,16 +266,6 @@ export default function RecommendationsPage() {
           </>
         )}
       </div>
-      <FeedbackModal
-        isOpen={feedbackModal.isOpen}
-        title={feedbackModal.title}
-        reasoning={feedbackModal.reasoning}
-        imageUrl={feedbackModal.imageUrl}
-        recommendationId={feedbackModal.recommendationId || ''}
-        sessionId={sessionId || ''}
-        onClose={closeFeedbackModal}
-        onSubmit={handleFeedbackSubmit}
-      />
       {recommendations && recommendations.length > 0 && (
         <MotionLink
           href='/spurningar/konnun'
