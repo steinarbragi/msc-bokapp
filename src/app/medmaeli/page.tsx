@@ -51,21 +51,37 @@ export default function RecommendationsPage() {
       }
 
       // Submit simplified feedback
-      fetch('/api/recommendations/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          recommendationId,
-          isRelevant: willBeSelected,
-          feedbackType: willBeSelected ? 'yes' : 'no',
-        }),
-      }).catch(error => {
-        console.error('Error submitting feedback:', error);
-      });
+      (async () => {
+        try {
+          const response = await fetch('/api/recommendations/feedback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionId,
+              recommendationId,
+              isRelevant: willBeSelected,
+              feedbackType: willBeSelected ? 'yes' : 'no',
+            }),
+          });
 
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+        } catch (error) {
+          console.error('Error submitting feedback:', error);
+          setSelectedBooks(prev => {
+            const revertedSet = new Set(prev);
+            if (willBeSelected) {
+              revertedSet.delete(bookId);
+            } else {
+              revertedSet.add(bookId);
+            }
+            return revertedSet;
+          });
+        }
+      })();
       return newSet;
     });
   };
