@@ -20,7 +20,13 @@ export function SingleChoiceQuestion({
       name={name}
       control={control}
       render={({ field }) => (
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+        <div
+          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${
+            question.options && question.options.length > 6
+              ? 'lg:grid-cols-3'
+              : 'lg:grid-cols-2'
+          }`}
+        >
           {question.options?.map(option => (
             <motion.button
               key={option}

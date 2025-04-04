@@ -288,7 +288,7 @@ export default function Questions({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className='mx-auto max-w-2xl px-4 sm:px-6'
+      className='mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-5xl'
     >
       <form
         onSubmit={e => {
