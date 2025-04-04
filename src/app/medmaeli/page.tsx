@@ -52,61 +52,62 @@ export default function RecommendationsPage() {
         return;
       }
 
+      // Check if the book is already selected
+      const willBeSelected = !selectedBooks.has(bookId);
+
+      // First update the UI state
       setSelectedBooks(prev => {
         const newSet = new Set(prev);
-        const willBeSelected = !newSet.has(bookId);
-
         if (willBeSelected) {
           newSet.add(bookId);
         } else {
           newSet.delete(bookId);
         }
-
-        // Submit feedback
-        (async () => {
-          try {
-            const response = await fetch('/api/recommendations/feedback', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                sessionId,
-                recommendationId,
-                isRelevant: willBeSelected,
-              }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json().catch(() => null);
-              console.error('Feedback submission error response:', {
-                status: response.status,
-                statusText: response.statusText,
-                errorData,
-              });
-              throw new Error(
-                `Server error: ${response.status} ${response.statusText}`
-              );
-            }
-
-            await response.json();
-          } catch (error) {
-            console.error('Error submitting feedback:', error);
-            setSelectedBooks(prev => {
-              const revertedSet = new Set(prev);
-              if (willBeSelected) {
-                revertedSet.delete(bookId);
-              } else {
-                revertedSet.add(bookId);
-              }
-              return revertedSet;
-            });
-          }
-        })();
         return newSet;
       });
+
+      // Then submit feedback in a separate step
+      try {
+        const response = await fetch('/api/recommendations/feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId,
+            recommendationId,
+            isRelevant: willBeSelected,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          console.error('Feedback submission error response:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData,
+          });
+          throw new Error(
+            `Server error: ${response.status} ${response.statusText}`
+          );
+        }
+
+        await response.json();
+      } catch (error) {
+        console.error('Error submitting feedback:', error);
+        // Revert the UI state if the API call fails
+        setSelectedBooks(prev => {
+          const revertedSet = new Set(prev);
+          if (willBeSelected) {
+            revertedSet.delete(bookId);
+          } else {
+            revertedSet.add(bookId);
+          }
+          return revertedSet;
+        });
+      }
     },
-    [sessionId]
+    [sessionId, selectedBooks]
   );
 
   useEffect(() => {
