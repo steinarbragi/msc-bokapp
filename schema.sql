@@ -74,6 +74,7 @@ CREATE TABLE recommendations (
     book_id TEXT REFERENCES books(id),
     reasoning TEXT NOT NULL,
     rank_position INTEGER NOT NULL,
+    is_relevant BOOLEAN,  -- Indicates if the user has marked this recommendation as relevant
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
