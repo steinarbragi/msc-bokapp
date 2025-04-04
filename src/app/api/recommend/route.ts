@@ -8,6 +8,10 @@ const anthropic = new Anthropic({
 
 export const maxDuration = 150;
 
+// Track in-progress sessions to prevent duplicate requests
+// Use unknown type to avoid type discrepancies
+const inProgressSessions = new Map<string, Promise<unknown>>();
+
 // Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -102,6 +106,22 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if we already have a request in progress for this session
+    if (inProgressSessions.has(sessionId)) {
+      console.log(
+        `Request already in progress for session ${sessionId}, waiting for it to complete`
+      );
+      try {
+        // Wait for the existing request to complete and return its result
+        const result = await inProgressSessions.get(sessionId);
+        return NextResponse.json(result);
+      } catch (error) {
+        console.error('Error while waiting for in-progress request:', error);
+        // Continue processing if the in-progress request failed
+        inProgressSessions.delete(sessionId);
+      }
+    }
+
     const sql = neon(process.env.DATABASE_URL!);
 
     // Check if recommendations already exist for this session
@@ -141,43 +161,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ recommendations: formattedRecommendations });
     }
 
-    // Store read books
-    for (const bookId of readBooks) {
-      try {
-        // First check if the book exists
-        const bookExists = await sql`
-          SELECT id FROM books WHERE id = ${bookId}
-        `;
-
-        if (bookExists.length > 0) {
-          await sql`
-            INSERT INTO read_books (session_id, book_id)
-            VALUES (${sessionId}, ${bookId})
-            ON CONFLICT DO NOTHING
+    // Create a promise to track this request
+    const requestPromise = (async () => {
+      // Store read books
+      for (const bookId of readBooks) {
+        try {
+          // First check if the book exists
+          const bookExists = await sql`
+            SELECT id FROM books WHERE id = ${bookId}
           `;
+
+          if (bookExists.length > 0) {
+            await sql`
+              INSERT INTO read_books (session_id, book_id)
+              VALUES (${sessionId}, ${bookId})
+              ON CONFLICT DO NOTHING
+            `;
+          }
+        } catch (dbError: unknown) {
+          const error = dbError as {
+            name?: string;
+            message?: string;
+            code?: string;
+            detail?: string;
+            hint?: string;
+          };
+          console.error('Error storing read book:', error);
+          // Continue with next book even if storage fails
         }
-      } catch (dbError: unknown) {
-        const error = dbError as {
-          name?: string;
-          message?: string;
-          code?: string;
-          detail?: string;
-          hint?: string;
-        };
-        console.error('Error storing read book:', error);
-        // Continue with next book even if storage fails
       }
-    }
 
-    // Filter out already read books
-    const unreadBooks = searchResults.filter(
-      (book: Book) => !readBooks.includes(book.id)
-    );
+      // Filter out already read books
+      const unreadBooks = searchResults.filter(
+        (book: Book) => !readBooks.includes(book.id)
+      );
 
-    console.log('Unread books count:', unreadBooks.length);
+      console.log('Unread books count:', unreadBooks.length);
 
-    // Prepare the prompt for Claude
-    const prompt = `Þú ert bókmenntafræðingur sem sérhæfir þig í að mæla með bókum.
+      // Prepare the prompt for Claude
+      const prompt = `Þú ert bókmenntafræðingur sem sérhæfir þig í að mæla með bókum.
 
 Notandinn hefur svarað þessum spurningum:
 ${Object.entries(surveyResponses || {})
@@ -195,90 +217,103 @@ Mikilvægt:
 3. Skrifaðu útskýringar sem tala beint til notandans
 4. Taktu tillit til svara notandans við spurningum um lestrarvenjur og áhugamál`;
 
-    console.log('Sending prompt to Claude');
-    const { response: completion, model: currentModel } =
-      await createMessageWithRetry([{ role: 'user', content: prompt }]);
+      console.log('Sending prompt to Claude');
+      const { response: completion, model: currentModel } =
+        await createMessageWithRetry([{ role: 'user', content: prompt }]);
 
-    // Initialize recommendations array
-    let recommendations: { title: string; reasoning: string }[] = [];
+      // Initialize recommendations array
+      let recommendations: { title: string; reasoning: string }[] = [];
 
-    // Extract recommendations from the tool use response
-    if (completion?.content) {
-      for (const block of completion.content) {
-        if (block.type === 'tool_use' && 'input' in block) {
-          const toolUseBlock = block as {
-            input: { recommendations: { title: string; reasoning: string }[] };
-          };
-          if (toolUseBlock.input?.recommendations?.length > 0) {
-            recommendations = toolUseBlock.input.recommendations;
-            break;
+      // Extract recommendations from the tool use response
+      if (completion?.content) {
+        for (const block of completion.content) {
+          if (block.type === 'tool_use' && 'input' in block) {
+            const toolUseBlock = block as {
+              input: {
+                recommendations: { title: string; reasoning: string }[];
+              };
+            };
+            if (toolUseBlock.input?.recommendations?.length > 0) {
+              recommendations = toolUseBlock.input.recommendations;
+              break;
+            }
           }
         }
       }
-    }
 
-    // If no recommendations were found, return an error
-    if (recommendations.length === 0) {
-      console.error('No valid recommendations found in Claude response');
-      return NextResponse.json(
-        { error: 'No recommendations generated' },
-        { status: 500 }
+      // If no recommendations were found, return an error
+      if (recommendations.length === 0) {
+        console.error('No valid recommendations found in Claude response');
+        throw new Error('No recommendations generated');
+      }
+
+      // Match the recommendations with the full book data and reorder based on the titles
+      const recommendedBooks = await Promise.all(
+        recommendations.map(async (rec, index) => {
+          // Find the book in unreadBooks
+          const book = unreadBooks.find(
+            (b: Book) => b.metadata.title === rec.title
+          );
+
+          if (!book || !book.metadata) {
+            console.log('No book found for title:', rec.title);
+            return null;
+          }
+
+          if (!book.id) {
+            console.log('Book found but no ID:', rec.title);
+            return null;
+          }
+
+          // Store recommendation in database
+          try {
+            const result = await sql`
+              INSERT INTO recommendations 
+              (session_id, book_id, reasoning, rank_position, model)
+              VALUES 
+              (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
+              RETURNING id
+            `;
+
+            return {
+              ...book,
+              id: result[0].id,
+              book_id: book.id,
+              reasoning: rec.reasoning,
+            };
+          } catch (dbError: unknown) {
+            const error = dbError as {
+              name?: string;
+              message?: string;
+              code?: string;
+              detail?: string;
+              hint?: string;
+            };
+            console.error('Error storing recommendation:', error);
+            // Continue with next recommendation even if storage fails
+          }
+        })
       );
+
+      // Filter out any null values before returning
+      const validRecommendations = recommendedBooks.filter(
+        (book): book is Book & { reasoning: string } => book !== null
+      );
+
+      return { recommendations: validRecommendations };
+    })();
+
+    // Store the promise in the Map
+    inProgressSessions.set(sessionId, requestPromise);
+
+    try {
+      // Wait for the request to complete
+      const result = await requestPromise;
+      return NextResponse.json(result);
+    } finally {
+      // Clean up when done
+      inProgressSessions.delete(sessionId);
     }
-
-    // Match the recommendations with the full book data and reorder based on the titles
-    const recommendedBooks = await Promise.all(
-      recommendations.map(async (rec, index) => {
-        // Find the book in unreadBooks
-        const book = unreadBooks.find(
-          (b: Book) => b.metadata.title === rec.title
-        );
-
-        if (!book || !book.metadata) {
-          console.log('No book found for title:', rec.title);
-          return null;
-        }
-
-        if (!book.id) {
-          console.log('Book found but no ID:', rec.title);
-          return null;
-        }
-
-        // Store recommendation in database
-        try {
-          const result = await sql`
-            INSERT INTO recommendations 
-            (session_id, book_id, reasoning, rank_position, model)
-            VALUES 
-            (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
-            RETURNING id
-          `;
-
-          return {
-            ...book,
-            id: result[0].id,
-            book_id: book.id,
-            reasoning: rec.reasoning,
-          };
-        } catch (dbError: unknown) {
-          const error = dbError as {
-            name?: string;
-            message?: string;
-            code?: string;
-            detail?: string;
-            hint?: string;
-          };
-          console.error('Error storing recommendation:', error);
-          // Continue with next recommendation even if storage fails
-        }
-      })
-    );
-    // Filter out any null values before returning
-    const validRecommendations = recommendedBooks.filter(
-      (book): book is Book & { reasoning: string } => book !== null
-    );
-
-    return NextResponse.json({ recommendations: validRecommendations });
   } catch (error) {
     console.error('Error in recommend route:', error);
     return NextResponse.json(
