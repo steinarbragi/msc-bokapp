@@ -20,6 +20,10 @@ type BookContextType = {
   readBooks: Set<string>;
   setReadBooks: (books: Set<string>) => void;
   resetSession: () => void;
+  recommendations: Recommendation[] | null;
+  setRecommendations: (recommendations: Recommendation[] | null) => void;
+  addRecommendation: (recommendation: Recommendation) => void;
+  removeRecommendation: (recommendationId: string) => void;
 };
 
 interface BookMetadata {
@@ -33,6 +37,18 @@ interface SearchResult {
   metadata: BookMetadata;
   id: string;
   score: number;
+}
+
+interface Recommendation {
+  id: string;
+  book_id: string;
+  metadata: {
+    title: string;
+    description: string;
+    url: string;
+    image_filename?: string;
+  };
+  reasoning: string;
 }
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
@@ -132,6 +148,10 @@ export function BookProvider({ children }: { children: ReactNode }) {
     return new Set();
   });
 
+  const [recommendations, setRecommendations] = useState<
+    Recommendation[] | null
+  >(null);
+
   // Update localStorage when state changes
   const handleSetCoverDescription = (description: string) => {
     setCoverDescription(description);
@@ -229,6 +249,20 @@ export function BookProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addRecommendation = (recommendation: Recommendation) => {
+    setRecommendations(prev => {
+      if (!prev) return [recommendation];
+      return [...prev, recommendation];
+    });
+  };
+
+  const removeRecommendation = (recommendationId: string) => {
+    setRecommendations(prev => {
+      if (!prev) return null;
+      return prev.filter(r => r.id !== recommendationId);
+    });
+  };
+
   const resetSession = () => {
     // Clear all state
     setCoverDescription(null);
@@ -237,6 +271,7 @@ export function BookProvider({ children }: { children: ReactNode }) {
     setDescriptionId(null);
     setSearchResults(null);
     setReadBooks(new Set());
+    setRecommendations(null);
 
     // Clear localStorage
     if (typeof window !== 'undefined') {
@@ -247,6 +282,7 @@ export function BookProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('descriptionId');
         localStorage.removeItem('searchResults');
         localStorage.removeItem('readBooks');
+        localStorage.removeItem('recommendations');
       } catch (error) {
         console.error('Error clearing localStorage:', {
           error,
@@ -273,6 +309,10 @@ export function BookProvider({ children }: { children: ReactNode }) {
         readBooks,
         setReadBooks: handleSetReadBooks,
         resetSession,
+        recommendations,
+        setRecommendations,
+        addRecommendation,
+        removeRecommendation,
       }}
     >
       {children}

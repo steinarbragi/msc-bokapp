@@ -80,8 +80,10 @@ CREATE TABLE recommendation_feedback (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES survey_sessions(id),
     recommendation_id UUID REFERENCES recommendations(id),
+    rating SMALLINT CHECK (rating BETWEEN 1 AND 5), -- 1-5 star rating
     is_relevant BOOLEAN,
     feedback_text TEXT,
+    feedback_type TEXT CHECK (feedback_type IN ('not_for_me', 'consider', 'very_good')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
