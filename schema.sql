@@ -83,7 +83,7 @@ CREATE TABLE recommendation_feedback (
     rating SMALLINT CHECK (rating BETWEEN 1 AND 5), -- 1-5 star rating
     is_relevant BOOLEAN,
     feedback_text TEXT,
-    feedback_type TEXT CHECK (feedback_type IN ('not_for_me', 'consider', 'very_good')),
+    feedback_type TEXT CHECK (feedback_type IN ('yes', 'maybe', 'no')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
