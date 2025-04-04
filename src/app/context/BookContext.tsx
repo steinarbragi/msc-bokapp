@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react';
 
 type SurveyResponse = {
   [key: string]: string | string[];
@@ -93,64 +99,71 @@ const safeParseSurveyResponse = (
 };
 
 export function BookProvider({ children }: { children: ReactNode }) {
-  // Initialize state from localStorage if available
-  const [coverDescription, setCoverDescription] = useState<string | null>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const value = localStorage.getItem('coverDescription');
-        return safeParseString(value, null);
-      }
-      return null;
-    }
-  );
-
+  // Initialize state with null/empty values first
+  const [coverDescription, setCoverDescription] = useState<string | null>(null);
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse | null>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const value = localStorage.getItem('surveyResponses');
-        return safeParseSurveyResponse(value, null);
-      }
-      return null;
-    }
+    null
   );
-
-  const [sessionId, setSessionId] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const value = localStorage.getItem('sessionId');
-      return safeParseString(value, null);
-    }
-    return null;
-  });
-
-  const [descriptionId, setDescriptionId] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const value = localStorage.getItem('descriptionId');
-      return safeParseString(value, null);
-    }
-    return null;
-  });
-
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [descriptionId, setDescriptionId] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResult[] | null>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const value = localStorage.getItem('searchResults');
-        return value ? JSON.parse(value) : null;
-      }
-      return null;
-    }
+    null
   );
-
-  const [readBooks, setReadBooks] = useState<Set<string>>(() => {
-    if (typeof window !== 'undefined') {
-      const value = localStorage.getItem('readBooks');
-      return value ? new Set(JSON.parse(value)) : new Set();
-    }
-    return new Set();
-  });
-
+  const [readBooks, setReadBooks] = useState<Set<string>>(new Set());
   const [recommendations, setRecommendations] = useState<
     Recommendation[] | null
   >(null);
+
+  // Load data from localStorage in useEffect
+  useEffect(() => {
+    // Cover Description
+    const storedCoverDescription = localStorage.getItem('coverDescription');
+    if (storedCoverDescription) {
+      const parsed = safeParseString(storedCoverDescription, null);
+      setCoverDescription(parsed);
+    }
+
+    // Survey Responses
+    const storedSurveyResponses = localStorage.getItem('surveyResponses');
+    if (storedSurveyResponses) {
+      const parsed = safeParseSurveyResponse(storedSurveyResponses, null);
+      setSurveyResponses(parsed);
+    }
+
+    // Session ID
+    const storedSessionId = localStorage.getItem('sessionId');
+    if (storedSessionId) {
+      const parsed = safeParseString(storedSessionId, null);
+      setSessionId(parsed);
+    }
+
+    // Description ID
+    const storedDescriptionId = localStorage.getItem('descriptionId');
+    if (storedDescriptionId) {
+      const parsed = safeParseString(storedDescriptionId, null);
+      setDescriptionId(parsed);
+    }
+
+    // Search Results
+    const storedSearchResults = localStorage.getItem('searchResults');
+    if (storedSearchResults) {
+      try {
+        setSearchResults(JSON.parse(storedSearchResults));
+      } catch (error) {
+        console.error('Error parsing search results from localStorage:', error);
+      }
+    }
+
+    // Read Books
+    const storedReadBooks = localStorage.getItem('readBooks');
+    if (storedReadBooks) {
+      try {
+        setReadBooks(new Set(JSON.parse(storedReadBooks)));
+      } catch (error) {
+        console.error('Error parsing read books from localStorage:', error);
+      }
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   // Update localStorage when state changes
   const handleSetCoverDescription = (description: string) => {

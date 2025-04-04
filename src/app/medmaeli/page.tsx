@@ -144,6 +144,14 @@ export default function RecommendationsPage() {
         <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
           Bókavélin
         </h1>
+        {!isLoading && (
+          <Link
+            href='/'
+            className='inline-flex items-center justify-center rounded-full border-2 border-purple-400 px-6 py-3 font-medium text-purple-500 shadow-md transition-all hover:bg-purple-50 hover:shadow-lg active:bg-purple-100 active:shadow-inner'
+          >
+            <span className='text-center'>Aftur á forsíðu</span>
+          </Link>
+        )}
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
         {error && (
@@ -173,12 +181,13 @@ export default function RecommendationsPage() {
               <div>
                 <div className='mb-4 flex items-center justify-between'>
                   <h2 className='text-4xl font-bold text-purple-800'>
-                    Bækur fyrir þig
+                    Bækur fyrir þig!
                   </h2>
                 </div>
                 <p className='mb-4 text-gray-600'>
-                  Þetta eru bækur sem bókavélin hefur fann sérstaklega fyrir
-                  þig!
+                  Hér getur þú valið bækur sem þú vilt lesa. Þú getur líka
+                  fundið þær á bókasafni með fjólubláu tökkunum. Að lokum væri
+                  frábært ef þú gætir svarað stuttri könnun um vefsíðuna.
                 </p>
                 <div className='space-y-6'>
                   {recommendations.map((recommendation, index) => (
@@ -301,7 +310,7 @@ export default function RecommendationsPage() {
           }}
           className='fixed bottom-8 right-8 z-50 ml-8 flex items-center gap-2 rounded-full px-6 py-4 text-lg font-bold text-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl'
         >
-          <span className='text-center'>Svara stuttri könnun um vefsíðuna</span>
+          <span className='text-center'>Ljúka og svara könnun</span>
         </MotionLink>
       )}
     </div>

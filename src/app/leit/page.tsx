@@ -132,6 +132,14 @@ export default function SearchPage() {
         <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
           Bókavélin
         </h1>
+        {!isLoading && (
+          <Link
+            href='/'
+            className='inline-flex items-center justify-center rounded-full border-2 border-purple-400 px-6 py-3 font-medium text-purple-500 shadow-md transition-all hover:bg-purple-50 hover:shadow-lg active:bg-purple-100 active:shadow-inner'
+          >
+            <span className='text-center'>Hætta</span>
+          </Link>
+        )}
       </div>
       <div className='mb-8 transform rounded-3xl border-4 border-purple-200 bg-white p-8 shadow-xl'>
         {error && (

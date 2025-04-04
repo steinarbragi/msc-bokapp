@@ -12,6 +12,7 @@ import Loader from '@/components/loader';
 import { useQuestionContext } from './QuestionContext';
 import { useBook } from '../context/BookContext';
 import Image from 'next/image';
+import Link from 'next/link';
 interface SurveyProps {
   questions: Question[];
   onComplete?: (answers: Record<string, string | string[]>) => void;
@@ -314,6 +315,12 @@ export default function Questions({
             answers={formAnswers}
             onStepClick={setCurrentStep}
           />
+          <Link
+            href='/'
+            className='inline-flex items-center justify-center rounded-full border-2 border-purple-400 px-6 py-3 font-medium text-purple-500 shadow-md transition-all hover:bg-purple-50 hover:shadow-lg active:bg-purple-100 active:shadow-inner'
+          >
+            <span className='text-center'>Aftur á forsíðu</span>
+          </Link>
         </div>
 
         <AnimatePresence mode='wait'>
