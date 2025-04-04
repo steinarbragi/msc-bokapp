@@ -217,8 +217,8 @@ export default function SearchPage() {
             />
             <Loader className='h-8 w-8 animate-spin text-purple-600' />
             <p className='mt-4 text-center text-lg text-gray-600'>
-              Bókavélin er að leita að bókum sem gætu passað fyrir þig. Þetta
-              eru ekki endanleg meðmæli, þú færð þau í næsta skrefi.
+              Bókavélin er að leita að bókum sem gætu passað fyrir þig. Þá getur
+              þú merkt við bækur sem þú hefur þegar lesið.
             </p>
           </div>
         ) : searchResults && searchResults.length > 0 ? (

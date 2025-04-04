@@ -105,6 +105,9 @@ export default function RecommendationsPage() {
       // If already loading or API call in progress, don't start another one
       if (apiCallInProgressRef.current) return;
 
+      // Set loading state to true at the beginning
+      setIsLoading(true);
+
       try {
         // If we already have recommendations, just filter them and return
         if (recommendations && recommendations.length > 0) {
@@ -184,12 +187,24 @@ export default function RecommendationsPage() {
 
     // Only call getRecommendations if we don't already have recommendations
     // or if we are showing loading state
-    if (!recommendations || !recommendations.length || isLoading) {
+    if (
+      (!recommendations || !recommendations.length) &&
+      !apiCallInProgressRef.current
+    ) {
       getRecommendations();
-    } else {
+    } else if (recommendations && recommendations.length > 0) {
       setIsLoading(false);
     }
-  }, []); // Empty dependency array to only run once on mount
+  }, [
+    sessionId,
+    searchResults,
+    readBooks,
+    recommendations,
+    surveyResponses,
+    setRecommendations,
+    setIsLoading,
+    setError,
+  ]); // Add proper dependencies
 
   // Filter recommendations to exclude read books
   const filteredRecommendations =
@@ -217,7 +232,7 @@ export default function RecommendationsPage() {
           </div>
         )}
 
-        {isLoading ? (
+        {isLoading || apiCallInProgressRef.current ? (
           <div className='inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm'>
             <Image
               src='/robot-girl.png'
