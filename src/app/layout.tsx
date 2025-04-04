@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { BookProvider } from './context/BookContext';
 import Image from 'next/image';
+import { InactivityTimeout } from '@/components/InactivityTimeout';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <BookProvider>
+          <InactivityTimeout />
           <div className='min-h-screen bg-gradient-to-b from-blue-100 via-purple-100 to-pink-100 px-3 py-10 font-[family-name:var(--font-geist-sans)] sm:p-20'>
             {children}
             <Image
