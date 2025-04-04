@@ -65,7 +65,7 @@ export default function RecommendationsPage() {
         newSet.delete(bookId);
       }
 
-      // Submit feedback about relevance
+      // Submit simplified feedback
       fetch('/api/recommendations/feedback', {
         method: 'POST',
         headers: {
@@ -82,21 +82,6 @@ export default function RecommendationsPage() {
       });
 
       return newSet;
-    });
-  };
-
-  const openFeedbackModal = (
-    recommendationId: string,
-    title: string,
-    reasoning: string | null,
-    imageUrl: string | null
-  ) => {
-    setFeedbackModal({
-      isOpen: true,
-      recommendationId,
-      title,
-      reasoning,
-      imageUrl,
     });
   };
 
@@ -239,7 +224,17 @@ export default function RecommendationsPage() {
                   {recommendations.map((recommendation, index) => (
                     <div
                       key={index}
-                      className='flex transform flex-col rounded-xl border-2 border-purple-100 bg-white p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8'
+                      onClick={() =>
+                        toggleBookSelection(
+                          recommendation.book_id,
+                          recommendation.id
+                        )
+                      }
+                      className={`flex transform cursor-pointer flex-col rounded-xl border-2 ${
+                        selectedBooks.has(recommendation.book_id)
+                          ? 'border-green-400 bg-green-50'
+                          : 'border-purple-100 bg-white'
+                      } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8`}
                     >
                       <div className='mx-auto w-64 flex-shrink-0 md:mx-0'>
                         {recommendation.metadata.image_filename && (
@@ -252,7 +247,7 @@ export default function RecommendationsPage() {
                           />
                         )}
                       </div>
-                      <div className='mt-4 md:mt-0'>
+                      <div className='mt-4 flex-grow md:mt-0'>
                         <h2 className='mb-2 text-xl font-semibold text-purple-800'>
                           {recommendation.metadata.title}
                         </h2>
@@ -264,7 +259,10 @@ export default function RecommendationsPage() {
 
                         {recommendation.metadata.description.length > 150 && (
                           <button
-                            onClick={() => toggleDescription(recommendation.id)}
+                            onClick={e => {
+                              e.stopPropagation(); // Prevent card click when clicking "show more"
+                              toggleDescription(recommendation.id);
+                            }}
                             className='text-sm text-purple-600 hover:text-purple-800'
                           >
                             {expandedDescriptions[recommendation.id]
@@ -287,42 +285,33 @@ export default function RecommendationsPage() {
                             href={`https://leitir.is/discovery/search?query=any,contains,${encodeURIComponent(recommendation.metadata.title)}&tab=MyLibrary&search_scope=10000_MYLIB&vid=354ILC_NETWORK:10000_UNION&offset=0`}
                             target='_blank'
                             rel='noopener noreferrer'
-                            className='rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700'
+                            onClick={e => e.stopPropagation()} // Prevent card click when clicking the link
+                            className='rounded-lg bg-purple-600 px-6 py-3 text-white transition-colors hover:bg-purple-700'
                           >
-                            Finna á bókasafni
+                            <span className='inline-flex items-center justify-center gap-2'>
+                              <span className='text-xl'>🔍</span>
+                              <span>Finna á bókasafni</span>
+                            </span>
                           </Link>
-                          <button
-                            onClick={() =>
-                              toggleBookSelection(
-                                recommendation.book_id,
-                                recommendation.id
-                              )
-                            }
-                            className={`rounded-lg px-4 py-2 transition-colors ${
+                          <div
+                            className={`inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 transition-all ${
                               selectedBooks.has(recommendation.book_id)
-                                ? 'bg-green-600 text-white hover:bg-green-700'
-                                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-purple-100 text-purple-700'
                             }`}
                           >
-                            {selectedBooks.has(recommendation.book_id)
-                              ? 'Valin'
-                              : 'Ég vil þessa!'}
-                          </button>
-                          <button
-                            onClick={() =>
-                              openFeedbackModal(
-                                recommendation.id,
-                                recommendation.metadata.title,
-                                recommendation.reasoning,
-                                recommendation.metadata.image_filename
-                                  ? `https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${recommendation.metadata.image_filename}`
-                                  : null
-                              )
-                            }
-                            className='rounded-lg bg-blue-100 px-4 py-2 text-blue-700 transition-colors hover:bg-blue-200'
-                          >
-                            Gefa álit
-                          </button>
+                            {selectedBooks.has(recommendation.book_id) ? (
+                              <>
+                                <span className='text-xl'>✨</span>
+                                <span>Þessi er valin!</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className='text-xl'>📚</span>
+                                <span>Ég vil þessa!</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
