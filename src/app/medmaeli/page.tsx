@@ -74,13 +74,22 @@ export default function RecommendationsPage() {
                 sessionId,
                 recommendationId,
                 isRelevant: willBeSelected,
-                feedbackType: willBeSelected ? 'yes' : 'no',
               }),
             });
 
             if (!response.ok) {
-              throw new Error('Network response was not ok');
+              const errorData = await response.json().catch(() => null);
+              console.error('Feedback submission error response:', {
+                status: response.status,
+                statusText: response.statusText,
+                errorData,
+              });
+              throw new Error(
+                `Server error: ${response.status} ${response.statusText}`
+              );
             }
+
+            await response.json();
           } catch (error) {
             console.error('Error submitting feedback:', error);
             setSelectedBooks(prev => {

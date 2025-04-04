@@ -261,7 +261,7 @@ export default function Questions({
         />
         <Loader />
         <p className='pt-5 text-center text-lg'>
-          Bókavélin er að leita að bókum. Þetta gæti tekið smá tíma.
+          Bókavélin er ímynda sér hina fullkomnu bók. Þetta gæti tekið smá tíma.
         </p>
       </div>
     );
