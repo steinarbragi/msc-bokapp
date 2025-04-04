@@ -22,7 +22,9 @@ CREATE TABLE generated_questions (
     question TEXT NOT NULL,
     question_key TEXT NOT NULL,
     options TEXT[] NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    model TEXT 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, question_key)
 );
 
 

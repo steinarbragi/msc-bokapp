@@ -111,9 +111,10 @@ async function createMessageWithRetry(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { surveyResponses, sessionId } = body as {
+    const { surveyResponses, sessionId, requestTimestamp } = body as {
       surveyResponses: SurveyResponse;
       sessionId: string;
+      requestTimestamp?: number;
     };
 
     if (!sessionId) {
@@ -124,7 +125,46 @@ export async function POST(request: Request) {
       );
     }
 
+    // Log request timestamp to track unique requests
+    console.log(
+      `Processing questions request for session ${sessionId}${requestTimestamp ? ` (timestamp: ${requestTimestamp})` : ''}`
+    );
+
     const sql = neon(process.env.DATABASE_URL!);
+
+    // Check if we already have generated questions for this session
+    const existingQuestions = await sql`
+      SELECT * FROM generated_questions
+      WHERE session_id = ${sessionId}
+      ORDER BY created_at ASC
+    `;
+
+    if (existingQuestions && existingQuestions.length > 0) {
+      console.log('Found existing questions for session, returning them');
+
+      // Format existing questions
+      const formattedQuestions = existingQuestions.map(q => ({
+        text: q.question,
+        type: 'single-choice', // Default to single-choice if not specified
+        options: q.options,
+        key: q.question_key,
+      }));
+
+      return NextResponse.json(
+        {
+          success: true,
+          questions: formattedQuestions,
+          cached: true,
+        },
+        {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+        }
+      );
+    }
 
     // Get questions based on responses
     const { response, model: currentModel } = await createMessageWithRetry([
@@ -194,23 +234,40 @@ Make sure the questions are engaging and help understand the user's interests be
           await sql`
             INSERT INTO generated_questions (session_id, question, question_key, options, model)
             VALUES (${sessionId}, ${question.text}, ${question.key}, ${question.options}::text[], ${currentModel})
+            ON CONFLICT DO NOTHING
           `;
         }
       } catch (error) {
         console.error('Error storing questions:', error);
-        throw error;
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      questions,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        questions,
+        cached: false,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error generating follow-up questions:', error);
     return NextResponse.json(
       { error: 'Failed to generate follow-up questions' },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      }
     );
   }
 }

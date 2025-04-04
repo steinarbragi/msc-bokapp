@@ -4,32 +4,69 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useBook } from './context/BookContext';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+
 export default function Home() {
   const { setSessionId, resetSession } = useBook();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleStart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent the default link behavior
+    setError(null);
+    setIsLoading(true);
 
     try {
       // Reset any existing session data
       resetSession();
 
+      console.log('Initializing session...');
       const response = await fetch('/api/survey/init', {
         method: 'POST',
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Session initialization failed:', errorText);
+        setError('Failed to initialize session. Please try again.');
         throw new Error('Failed to initialize session');
       }
 
       const data = await response.json();
+      if (!data.sessionId) {
+        console.error('No session ID returned in response:', data);
+        setError(
+          'Invalid response from server. Please reload the page and try again.'
+        );
+        throw new Error('Invalid response: No session ID');
+      }
+
       console.log('Setting session ID in context:', data.sessionId);
       setSessionId(data.sessionId);
 
       // Navigate programmatically after setting the session ID
       router.push('/spurningar');
     } catch (error) {
-      console.error('Error initializing session:', error);
+      console.error('Error initializing session:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      // Set a user-friendly error message if not already set
+      if (!error) {
+        setError(
+          'Ekki tókst að hefja forritið. Vinsamlegast reynið aftur síðar.'
+        );
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -51,6 +88,13 @@ export default function Home() {
         <h2 className='mb-4 text-2xl font-bold text-purple-600 sm:mb-6 sm:text-3xl'>
           Viltu finna bók?
         </h2>
+
+        {/* Show error message if there is one */}
+        {error && (
+          <div className='mb-4 rounded-lg bg-red-100 p-4 text-red-700'>
+            {error}
+          </div>
+        )}
 
         <p className='mb-4 text-base sm:mb-6 sm:text-lg'>
           Við notum gervigreind til að hjálpa þér að finna bækur sem þú gætir
@@ -90,6 +134,7 @@ export default function Home() {
         <div className='flex justify-center'>
           <motion.button
             onClick={handleStart}
+            disabled={isLoading}
             animate={{
               background: [
                 'linear-gradient(to right, #f97316, #2563eb, #9333ea)',
@@ -105,18 +150,20 @@ export default function Home() {
               repeatType: 'loop',
             }}
             whileHover={{
-              scale: 1.1,
-              boxShadow:
-                '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+              scale: isLoading ? 1.0 : 1.1,
+              boxShadow: isLoading
+                ? 'none'
+                : '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
             }}
             whileTap={{
-              scale: 0.95,
-              boxShadow:
-                '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+              scale: isLoading ? 1.0 : 0.95,
+              boxShadow: isLoading
+                ? 'none'
+                : '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
             }}
-            className='flex items-center gap-2 rounded-full px-4 py-3 text-lg font-bold text-white shadow-xl transition-all hover:brightness-110 active:brightness-90 sm:px-6 sm:py-4 sm:text-xl'
+            className={`flex items-center gap-2 rounded-full px-4 py-3 text-lg font-bold text-white shadow-xl transition-all hover:brightness-110 active:brightness-90 sm:px-6 sm:py-4 sm:text-xl ${isLoading ? 'cursor-not-allowed opacity-70' : ''}`}
           >
-            Hefjum ævintýrið! 🚀
+            {isLoading ? 'Hleð...' : 'Hefjum ævintýrið! 🚀'}
           </motion.button>
         </div>
 
