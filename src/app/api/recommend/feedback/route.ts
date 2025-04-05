@@ -20,9 +20,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if recommendation exists
-    console.log(
-      `Checking if recommendation exists: ${recommendationId} for session ${sessionId}`
-    );
     const recommendationExists = await sql`
       SELECT id FROM recommendations 
       WHERE id = ${recommendationId} AND session_id = ${sessionId}
@@ -40,9 +37,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      console.log(
-        `Updating recommendation ${recommendationId} with is_relevant=${isRelevant}`
-      );
       // Update the is_relevant field directly in the recommendations table
       const result = await sql`
         UPDATE recommendations
@@ -50,7 +44,6 @@ export async function POST(request: NextRequest) {
         WHERE id = ${recommendationId} AND session_id = ${sessionId}
         RETURNING *
       `;
-      console.log('Successfully updated recommendation. Result:', result);
 
       return NextResponse.json({ success: true, data: result[0] });
     } catch (dbError: unknown) {

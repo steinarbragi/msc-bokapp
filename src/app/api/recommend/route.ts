@@ -188,26 +188,19 @@ export async function POST(req: Request) {
       // Store read books
       for (const bookId of readBooks) {
         try {
-          console.log(
-            `Attempting to store read book with ID: ${bookId} for session: ${sessionId}`
-          );
           // First check if the book exists
           const bookExists = await sql`
             SELECT id FROM books WHERE id = ${bookId}
           `;
 
-          console.log(`Book exists check result for ${bookId}:`, bookExists);
-
           if (bookExists.length > 0) {
-            const result = await sql`
+            await sql`
               INSERT INTO read_books (session_id, book_id)
               VALUES (${sessionId}, ${bookId})
               ON CONFLICT DO NOTHING
-              RETURNING id
             `;
-            console.log(`Successfully stored read book. Result:`, result);
           } else {
-            console.warn(`Book with ID ${bookId} not found in books table`);
+            console.error('Book not found in database:', { bookId, sessionId });
           }
         } catch (dbError: unknown) {
           const error = dbError as {
@@ -230,8 +223,7 @@ export async function POST(req: Request) {
               stack: error instanceof Error ? error.stack : undefined,
             },
           });
-          // Throw the error to stop processing if we can't store read books
-          throw new Error(`Failed to store read book: ${error.message}`);
+          // Continue with next book even if storage fails
         }
       }
 
@@ -239,6 +231,14 @@ export async function POST(req: Request) {
       const unreadBooks = searchResults.filter(
         (book: Book) => !readBooks.includes(book.id)
       );
+
+      if (unreadBooks.length === 0) {
+        console.error('No unread books found after filtering:', {
+          totalBooks: searchResults.length,
+          readBooksCount: readBooks.size,
+          sessionId,
+        });
+      }
 
       console.log('Unread books count:', unreadBooks.length);
 
@@ -287,7 +287,10 @@ Mikilvægt:
 
       // If no recommendations were found, return an error
       if (recommendations.length === 0) {
-        console.error('No valid recommendations found in Claude response');
+        console.error('No valid recommendations found in Claude response:', {
+          sessionId,
+          completionContent: completion?.content,
+        });
         throw new Error('No recommendations generated');
       }
 
@@ -300,20 +303,25 @@ Mikilvægt:
           );
 
           if (!book || !book.metadata) {
-            console.log('No book found for title:', rec.title);
+            console.error('Book not found in unread books:', {
+              title: rec.title,
+              sessionId,
+              bookMetadata: book?.metadata,
+            });
             return null;
           }
 
           if (!book.id) {
-            console.log('Book found but no ID:', rec.title);
+            console.error('Book found but no ID:', {
+              title: rec.title,
+              sessionId,
+              book,
+            });
             return null;
           }
 
           // Store recommendation in database
           try {
-            console.log(
-              `Attempting to store recommendation for book ${book.id} in session ${sessionId}`
-            );
             const result = await sql`
               INSERT INTO recommendations 
               (session_id, book_id, reasoning, rank_position, model)
@@ -321,7 +329,6 @@ Mikilvægt:
               (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
               RETURNING id
             `;
-            console.log(`Successfully stored recommendation. Result:`, result);
 
             return {
               ...book,
@@ -341,6 +348,7 @@ Mikilvægt:
               error,
               bookId: book.id,
               sessionId,
+              rankPosition: index + 1,
               details: {
                 name: error.name,
                 message: error.message,
@@ -350,16 +358,24 @@ Mikilvægt:
                 stack: error instanceof Error ? error.stack : undefined,
               },
             });
-            // Throw the error to stop processing if we can't store recommendations
-            throw new Error(`Failed to store recommendation: ${error.message}`);
+            return null;
           }
         })
       );
 
-      // Filter out any null values before returning
+      // Filter out any null values and log if we lost recommendations
       const validRecommendations = recommendedBooks.filter(
         (book): book is Book & { reasoning: string } => book !== null
       );
+
+      if (validRecommendations.length < recommendedBooks.length) {
+        console.error('Some recommendations were invalid:', {
+          sessionId,
+          totalRecommendations: recommendedBooks.length,
+          validRecommendations: validRecommendations.length,
+          droppedCount: recommendedBooks.length - validRecommendations.length,
+        });
+      }
 
       return { recommendations: validRecommendations };
     })();
