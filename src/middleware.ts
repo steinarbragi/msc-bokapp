@@ -127,7 +127,14 @@ export async function middleware(request: NextRequest) {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const isLocalRequest = isLocalhost(request);
 
-  if (!isDevelopment && !isLocalRequest) {
+  // Skip rate limiting for certain endpoints
+  const skipRateLimitEndpoints = ['/api/recommend/status'];
+
+  if (
+    !isDevelopment &&
+    !isLocalRequest &&
+    !skipRateLimitEndpoints.includes(request.nextUrl.pathname)
+  ) {
     // Check rate limit
     const ip = getClientIp(request);
     const pathname = request.nextUrl.pathname;
