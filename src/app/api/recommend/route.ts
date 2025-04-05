@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { neon } from '@neondatabase/serverless';
+import { Redis } from '@upstash/redis';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-export const maxDuration = 150;
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_KV_REST_API_URL!,
+  token: process.env.UPSTASH_KV_REST_API_TOKEN!,
+});
 
-// Track in-progress sessions to prevent duplicate requests
-// Use unknown type to avoid type discrepancies
-const inProgressSessions = new Map<string, Promise<unknown>>();
+export const maxDuration = 150;
 
 // Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -107,19 +110,37 @@ export async function POST(req: Request) {
     }
 
     // Check if we already have a request in progress for this session
-    if (inProgressSessions.has(sessionId)) {
+    const inProgressKey = `in_progress:${sessionId}`;
+    console.log(`Checking in-progress status for session: ${sessionId}`);
+
+    // Try to set the in-progress status atomically
+    const wasSet = await redis.set(inProgressKey, 'processing', {
+      ex: maxDuration,
+      nx: true, // Only set if key does not exist
+    });
+
+    if (!wasSet) {
       console.log(
         `Request already in progress for session ${sessionId}, waiting for it to complete`
       );
-      try {
-        // Wait for the existing request to complete and return its result
-        const result = await inProgressSessions.get(sessionId);
-        return NextResponse.json(result);
-      } catch (error) {
-        console.error('Error while waiting for in-progress request:', error);
-        // Continue processing if the in-progress request failed
-        inProgressSessions.delete(sessionId);
+      // Wait for the result to be available
+      let attempts = 0;
+      const maxAttempts = 30; // Wait up to 30 seconds
+      while (attempts < maxAttempts) {
+        const result = await redis.get(inProgressKey);
+        if (result && result !== 'processing') {
+          try {
+            return NextResponse.json(JSON.parse(result as string));
+          } catch (error) {
+            console.error('Error parsing in-progress result:', error);
+            break;
+          }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        attempts++;
       }
+      // If we couldn't get the result, clean up and continue
+      await redis.del(inProgressKey);
     }
 
     const sql = neon(process.env.DATABASE_URL!);
@@ -303,16 +324,18 @@ Mikilvægt:
       return { recommendations: validRecommendations };
     })();
 
-    // Store the promise in the Map
-    inProgressSessions.set(sessionId, requestPromise);
-
     try {
       // Wait for the request to complete
       const result = await requestPromise;
+      // Store the final result in Redis
+      await redis.set(inProgressKey, JSON.stringify(result), {
+        ex: maxDuration,
+      });
       return NextResponse.json(result);
-    } finally {
-      // Clean up when done
-      inProgressSessions.delete(sessionId);
+    } catch (error) {
+      // Clean up on error
+      await redis.del(inProgressKey);
+      throw error;
     }
   } catch (error) {
     console.error('Error in recommend route:', error);
