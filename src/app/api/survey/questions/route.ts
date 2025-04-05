@@ -180,6 +180,7 @@ Generate follow-up questions to better understand the user's preferences. The qu
 - Include a mix of single-choice and multiple-choice questions
 - Have unique keys for each question
 - Don't include questions about book length
+- Include emojis when appropriate
 
 Make sure the questions are engaging and help understand the user's interests better.`,
       },
