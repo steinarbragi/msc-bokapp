@@ -39,7 +39,7 @@ export default function FeedbackModal({
   const fetchExistingFeedback = useCallback(async () => {
     try {
       const response = await fetch(
-        `/api/recommendations/feedback/${recommendationId}?sessionId=${sessionId}`
+        `/api/recommend/feedback/${recommendationId}?sessionId=${sessionId}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -64,7 +64,7 @@ export default function FeedbackModal({
 
   const handleRatingSubmit = async (rating: number) => {
     try {
-      const response = await fetch('/api/recommendations/feedback', {
+      const response = await fetch('/api/recommend/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export default function FeedbackModal({
     setSubmitError(null);
 
     try {
-      const response = await fetch('/api/recommendations/feedback', {
+      const response = await fetch('/api/recommend/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
