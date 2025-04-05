@@ -52,6 +52,7 @@ export default function TermsPage() {
             <ul className='list-inside list-disc space-y-2 text-gray-700'>
               <li>Svör við spurningum um lestrarvenjur og bókasmekk</li>
               <li>Upplýsingar um hvaða bækur eru merktar sem lesnar</li>
+              <li>Bókameðmæli ásamt rökstuðningi frá mállíkani</li>
               <li>Hvernig bókavélin er notuð og hvaða tillögur eru gefnar</li>
             </ul>
             <p className='text-gray-700'>
