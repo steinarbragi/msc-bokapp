@@ -174,11 +174,12 @@ export async function POST(request: Request) {
 
 Generate follow-up questions to better understand the user's preferences. The questions should:
 - Be in Icelandic
-- Be appropriate for children aged 6-11
+- Be appropriate for children based on the age group (adults should be asked about books for children)
 - Be clear and engaging
 - Have 2-5 options each
 - Include a mix of single-choice and multiple-choice questions
 - Have unique keys for each question
+- Don't include questions about book length
 
 Make sure the questions are engaging and help understand the user's interests better.`,
       },
