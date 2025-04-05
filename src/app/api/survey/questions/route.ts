@@ -181,6 +181,10 @@ Generate follow-up questions to better understand the user's preferences. The qu
 - Have unique keys for each question
 - Don't include questions about book length
 - Include emojis when appropriate
+- Don't include questions about the user's age
+- Don't include questions about the user's gender
+- Don't include questions about the user's location
+- Don't include questions about the user's education
 
 Make sure the questions are engaging and help understand the user's interests better.`,
       },

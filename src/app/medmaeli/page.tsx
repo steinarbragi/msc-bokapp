@@ -266,7 +266,7 @@ export default function RecommendationsPage() {
     recommendations?.filter(rec => !readBooks.has(rec.book_id)) || [];
 
   return (
-    <div className='mx-auto max-w-4xl'>
+    <div className='mx-auto max-w-7xl'>
       <div className='mb-2 flex items-center justify-between'>
         <h1 className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent'>
           Bókavélin
@@ -311,12 +311,12 @@ export default function RecommendationsPage() {
                     Bækur fyrir þig!
                   </h2>
                 </div>
-                <p className='mb-4 text-gray-600'>
+                <p className='mb-4 rounded-lg bg-purple-50 p-4 text-lg text-gray-600'>
                   Hér getur þú valið bækur sem þú vilt lesa. Þú getur líka
                   fundið þær á bókasafni með fjólubláu tökkunum. Að lokum væri
                   frábært ef þú gætir svarað stuttri könnun um vefsíðuna.
                 </p>
-                <div className='space-y-6'>
+                <div className='grid grid-cols-1 gap-6'>
                   {filteredRecommendations.map((recommendation, index) => (
                     <div
                       key={index}
@@ -330,20 +330,20 @@ export default function RecommendationsPage() {
                         selectedBooks.has(recommendation.book_id)
                           ? 'border-green-400 bg-green-50'
                           : 'border-purple-100 bg-white'
-                      } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:flex-row md:gap-8`}
+                      } p-4 shadow-md transition-all hover:scale-[1.02] hover:shadow-xl md:gap-8 lg:flex-row`}
                     >
-                      <div className='mx-auto w-64 flex-shrink-0 md:mx-0'>
+                      <div className='flex w-full flex-shrink-0 justify-center md:mx-0 md:mr-4 md:w-80 md:justify-start'>
                         {recommendation.metadata.image_filename && (
                           <Image
                             src={`https://c8relzaanv7wdgxi.public.blob.vercel-storage.com/${recommendation.metadata.image_filename}`}
                             alt={recommendation.metadata.title}
-                            width={300}
-                            height={480}
-                            className='h-80 w-full rounded-lg object-cover shadow-md'
+                            width={400}
+                            height={640}
+                            className='h-96 w-80 rounded-lg object-cover shadow-md'
                           />
                         )}
                       </div>
-                      <div className='mt-4 flex-grow md:mt-0'>
+                      <div className='mt-4 flex-grow md:ml-2 md:mt-0'>
                         <h2 className='mb-2 text-xl font-semibold text-purple-800'>
                           {recommendation.metadata.title}
                         </h2>
@@ -369,7 +369,7 @@ export default function RecommendationsPage() {
 
                         {recommendation.reasoning && (
                           <div className='mt-4 rounded-lg bg-purple-50 p-3 text-sm text-purple-700'>
-                            <p className='text-md mb-2 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text font-bold text-transparent'>
+                            <p className='mb-2 bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-lg font-bold text-transparent'>
                               Hvað segir bókavélin?
                             </p>
                             {recommendation.reasoning}
