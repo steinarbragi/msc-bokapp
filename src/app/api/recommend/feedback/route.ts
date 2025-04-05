@@ -9,6 +9,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!sessionId || !recommendationId) {
+      console.error('Missing required fields:', {
+        sessionId,
+        recommendationId,
+      });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -16,12 +20,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if recommendation exists
+    console.log(
+      `Checking if recommendation exists: ${recommendationId} for session ${sessionId}`
+    );
     const recommendationExists = await sql`
       SELECT id FROM recommendations 
       WHERE id = ${recommendationId} AND session_id = ${sessionId}
     `;
 
     if (recommendationExists.length === 0) {
+      console.error('Recommendation not found:', {
+        recommendationId,
+        sessionId,
+      });
       return NextResponse.json(
         { error: 'Recommendation not found' },
         { status: 404 }
@@ -29,6 +40,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      console.log(
+        `Updating recommendation ${recommendationId} with is_relevant=${isRelevant}`
+      );
       // Update the is_relevant field directly in the recommendations table
       const result = await sql`
         UPDATE recommendations
@@ -36,6 +50,7 @@ export async function POST(request: NextRequest) {
         WHERE id = ${recommendationId} AND session_id = ${sessionId}
         RETURNING *
       `;
+      console.log('Successfully updated recommendation. Result:', result);
 
       return NextResponse.json({ success: true, data: result[0] });
     } catch (dbError: unknown) {
@@ -46,14 +61,31 @@ export async function POST(request: NextRequest) {
         detail?: string;
         hint?: string;
       };
-      console.error('Database error in updating recommendation:', error);
+      console.error('Database error in updating recommendation:', {
+        error,
+        recommendationId,
+        sessionId,
+        isRelevant,
+        details: {
+          name: error.name,
+          message: error.message,
+          code: error.code,
+          detail: error.detail,
+          hint: error.hint,
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+      });
       return NextResponse.json(
         { error: 'Failed to update recommendation', details: error.message },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Error in feedback submission:', error);
+    console.error('Error in feedback submission:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

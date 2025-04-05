@@ -188,17 +188,26 @@ export async function POST(req: Request) {
       // Store read books
       for (const bookId of readBooks) {
         try {
+          console.log(
+            `Attempting to store read book with ID: ${bookId} for session: ${sessionId}`
+          );
           // First check if the book exists
           const bookExists = await sql`
             SELECT id FROM books WHERE id = ${bookId}
           `;
 
+          console.log(`Book exists check result for ${bookId}:`, bookExists);
+
           if (bookExists.length > 0) {
-            await sql`
+            const result = await sql`
               INSERT INTO read_books (session_id, book_id)
               VALUES (${sessionId}, ${bookId})
               ON CONFLICT DO NOTHING
+              RETURNING id
             `;
+            console.log(`Successfully stored read book. Result:`, result);
+          } else {
+            console.warn(`Book with ID ${bookId} not found in books table`);
           }
         } catch (dbError: unknown) {
           const error = dbError as {
@@ -208,8 +217,21 @@ export async function POST(req: Request) {
             detail?: string;
             hint?: string;
           };
-          console.error('Error storing read book:', error);
-          // Continue with next book even if storage fails
+          console.error('Error storing read book:', {
+            error,
+            bookId,
+            sessionId,
+            details: {
+              name: error.name,
+              message: error.message,
+              code: error.code,
+              detail: error.detail,
+              hint: error.hint,
+              stack: error instanceof Error ? error.stack : undefined,
+            },
+          });
+          // Throw the error to stop processing if we can't store read books
+          throw new Error(`Failed to store read book: ${error.message}`);
         }
       }
 
@@ -289,6 +311,9 @@ Mikilvægt:
 
           // Store recommendation in database
           try {
+            console.log(
+              `Attempting to store recommendation for book ${book.id} in session ${sessionId}`
+            );
             const result = await sql`
               INSERT INTO recommendations 
               (session_id, book_id, reasoning, rank_position, model)
@@ -296,6 +321,7 @@ Mikilvægt:
               (${sessionId}, ${book.id}, ${rec.reasoning}, ${index + 1}, ${currentModel})
               RETURNING id
             `;
+            console.log(`Successfully stored recommendation. Result:`, result);
 
             return {
               ...book,
@@ -311,8 +337,21 @@ Mikilvægt:
               detail?: string;
               hint?: string;
             };
-            console.error('Error storing recommendation:', error);
-            // Continue with next recommendation even if storage fails
+            console.error('Error storing recommendation:', {
+              error,
+              bookId: book.id,
+              sessionId,
+              details: {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                detail: error.detail,
+                hint: error.hint,
+                stack: error instanceof Error ? error.stack : undefined,
+              },
+            });
+            // Throw the error to stop processing if we can't store recommendations
+            throw new Error(`Failed to store recommendation: ${error.message}`);
           }
         })
       );
