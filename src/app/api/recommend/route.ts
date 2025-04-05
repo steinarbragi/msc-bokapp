@@ -129,12 +129,8 @@ export async function POST(req: Request) {
       while (attempts < maxAttempts) {
         const result = await redis.get(inProgressKey);
         if (result && result !== 'processing') {
-          try {
-            return NextResponse.json(JSON.parse(result as string));
-          } catch (error) {
-            console.error('Error parsing in-progress result:', error);
-            break;
-          }
+          // The result is already an object, no need to parse
+          return NextResponse.json(result);
         }
         await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
         attempts++;
@@ -179,7 +175,12 @@ export async function POST(req: Request) {
         },
       }));
 
-      return NextResponse.json({ recommendations: formattedRecommendations });
+      const result = { recommendations: formattedRecommendations };
+      // Store the result in Redis
+      await redis.set(inProgressKey, result, {
+        ex: maxDuration,
+      });
+      return NextResponse.json(result);
     }
 
     // Create a promise to track this request
@@ -341,6 +342,49 @@ Mikilvægt:
     console.error('Error in recommend route:', error);
     return NextResponse.json(
       { error: 'Failed to process recommendations' },
+      { status: 500 }
+    );
+  }
+}
+
+// Add new status endpoint
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('sessionId');
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const inProgressKey = `in_progress:${sessionId}`;
+    const result = await redis.get(inProgressKey);
+
+    if (!result) {
+      return NextResponse.json({ isProcessing: false });
+    }
+
+    if (result === 'processing') {
+      return NextResponse.json({ isProcessing: true });
+    }
+
+    try {
+      const parsedResult = JSON.parse(result as string);
+      return NextResponse.json({
+        isProcessing: false,
+        recommendations: parsedResult.recommendations,
+      });
+    } catch (error) {
+      console.error('Error parsing result:', error);
+      return NextResponse.json({ isProcessing: false });
+    }
+  } catch (error) {
+    console.error('Error in status endpoint:', error);
+    return NextResponse.json(
+      { error: 'Failed to check status' },
       { status: 500 }
     );
   }

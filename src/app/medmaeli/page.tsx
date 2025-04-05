@@ -132,6 +132,51 @@ export default function RecommendationsPage() {
           return;
         }
 
+        // Check if recommendations are already being generated
+        const inProgress = await fetch('/api/recommend/status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        if (inProgress.ok) {
+          const { isProcessing } = await inProgress.json();
+          if (isProcessing) {
+            // If recommendations are being generated, wait for them
+            let attempts = 0;
+            const maxAttempts = 30; // Wait up to 30 seconds
+            while (attempts < maxAttempts) {
+              const result = await fetch('/api/recommend/status', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sessionId }),
+              });
+
+              if (result.ok) {
+                const {
+                  isProcessing: stillProcessing,
+                  recommendations: existingRecs,
+                } = await result.json();
+                if (!stillProcessing && existingRecs) {
+                  // Filter out any books that have been marked as read
+                  const filteredRecommendations = existingRecs.filter(
+                    (rec: Recommendation) => !readBooks.has(rec.book_id)
+                  );
+                  setRecommendations(filteredRecommendations);
+                  setIsLoading(false);
+                  return;
+                }
+              }
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+              attempts++;
+            }
+          }
+        }
+
         // Mark API call as in progress
         apiCallInProgressRef.current = true;
         const requestTimestamp = Date.now();

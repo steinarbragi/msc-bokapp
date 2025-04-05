@@ -80,37 +80,35 @@ export default function SearchPage() {
       setSearchResults(searchData.matches);
       setIsLoading(false);
 
-      // Generate recommendations only if not already in progress
-      if (!recommendationsGeneratingRef.current) {
-        setIsGeneratingRecommendations(true);
-        recommendationsGeneratingRef.current = true;
-        try {
-          const recommendResponse = await fetch('/api/recommend', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              searchResults: searchData.matches,
-              readBooks: Array.from(readBooks),
-              surveyResponses,
-              sessionId,
-            }),
-          });
+      // Start generating recommendations in the background
+      setIsGeneratingRecommendations(true);
+      recommendationsGeneratingRef.current = true;
+      try {
+        const recommendResponse = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            searchResults: searchData.matches,
+            readBooks: Array.from(readBooks),
+            surveyResponses,
+            sessionId,
+          }),
+        });
 
-          if (!recommendResponse.ok) {
-            throw new Error('Failed to generate recommendations');
-          }
-
-          const recommendData = await recommendResponse.json();
-          setRecommendations(recommendData.recommendations);
-        } catch (recommendError) {
-          console.error('Error generating recommendations:', recommendError);
-          // Don't throw here as search results are still valid
-        } finally {
-          setIsGeneratingRecommendations(false);
-          recommendationsGeneratingRef.current = false;
+        if (!recommendResponse.ok) {
+          throw new Error('Failed to generate recommendations');
         }
+
+        const recommendData = await recommendResponse.json();
+        setRecommendations(recommendData.recommendations);
+      } catch (recommendError) {
+        console.error('Error generating recommendations:', recommendError);
+        // Don't throw here as search results are still valid
+      } finally {
+        setIsGeneratingRecommendations(false);
+        recommendationsGeneratingRef.current = false;
       }
     } catch (error: unknown) {
       console.error('Error in handleSearch:', {
