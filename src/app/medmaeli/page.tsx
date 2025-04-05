@@ -68,7 +68,7 @@ export default function RecommendationsPage() {
 
       // Then submit feedback in a separate step
       try {
-        const response = await fetch('/api/recommendations/feedback', {
+        const response = await fetch('/api/recommend/feedback', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
