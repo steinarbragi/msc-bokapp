@@ -182,7 +182,7 @@ Generate follow-up questions to better understand the user's preferences. The qu
 - Include a mix of single-choice and multiple-choice questions
 - Have unique keys for each question
 - Don't include questions about book length
-- Include emojis when appropriat
+- Include emojis when appropriate
 - Speak directly to the child in the questions
 
 
