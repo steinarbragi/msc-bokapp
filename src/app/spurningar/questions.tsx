@@ -335,7 +335,7 @@ export default function Questions({
             <motion.h1
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className='mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent sm:mb-6 sm:text-3xl'
+              className='mb-4 text-2xl font-bold text-indigo-600 sm:mb-6 sm:text-3xl'
             >
               {currentQuestion.text}
             </motion.h1>
