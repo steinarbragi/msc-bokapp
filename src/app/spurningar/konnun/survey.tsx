@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { Question, FormValues } from '../types';
@@ -43,6 +43,19 @@ export default function Survey({
 
   const isComplete = hasValidAnswers && hasAnsweredAllQuestions;
 
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (currentStep > 0) {
+        setCurrentStep(currentStep - 1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentStep]);
+
   const onSubmit = (data: FormValues) => {
     if (onComplete) {
       const transformedAnswers = Object.entries(data).reduce(
@@ -69,9 +82,25 @@ export default function Survey({
     if (isLastQuestion || isComplete) {
       handleSubmit(onSubmit)();
     } else {
-      setCurrentStep(prev => prev + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      // Add to history without changing URL
+      window.history.pushState(
+        { step: nextStep },
+        '',
+        window.location.pathname
+      );
     }
   };
+
+  // Initialize history state
+  useEffect(() => {
+    window.history.replaceState(
+      { step: currentStep },
+      '',
+      window.location.pathname
+    );
+  }, [currentStep]);
 
   if (isLoading) {
     return (

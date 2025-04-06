@@ -13,6 +13,7 @@ import { useQuestionContext } from './QuestionContext';
 import { useBook } from '../context/BookContext';
 import Image from 'next/image';
 import Link from 'next/link';
+
 interface SurveyProps {
   questions: Question[];
   onComplete?: (answers: Record<string, string | string[]>) => void;
@@ -89,6 +90,19 @@ export default function Questions({
     }
   };
 
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      if (currentStep > 0) {
+        setCurrentStep(currentStep - 1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentStep, setCurrentStep]);
+
   const handleNextStep = async (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
@@ -107,7 +121,18 @@ export default function Questions({
 
     const nextStep = Math.min(currentStep + 1, questions.length - 1);
     setCurrentStep(nextStep);
+    // Add to history without changing URL
+    window.history.pushState({ step: nextStep }, '', window.location.pathname);
   };
+
+  // Initialize history state
+  useEffect(() => {
+    window.history.replaceState(
+      { step: currentStep },
+      '',
+      window.location.pathname
+    );
+  }, [currentStep]);
 
   useEffect(() => {
     // Remove these debug logs:
